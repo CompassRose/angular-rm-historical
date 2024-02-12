@@ -1,0 +1,94 @@
+.category-frame {
+  display: flex;
+  align-items: center;
+  min-width: 100% !important;
+
+  .region-space {
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+  }
+
+  .plottype-space {
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+  }
+
+  .button-space {
+    display: flex;
+    align-items: center;
+    margin-left: auto !important;
+  }
+}
+
+:host ::ng-deep .multiselect-dropdown .dropdown-btn .dropdown-multiselect__caret {
+  line-height: 16px;
+  display: block;
+  position: absolute;
+  box-sizing: border-box;
+  width: 30px;
+  height: 35px !important;
+  right: 1px;
+  margin-top: 0.5rem;
+  margin-left: 20px !important;
+  padding: 4px 8px;
+  text-decoration: none;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+:host ::ng-deep .multiselect-dropdown {
+  position: relative;
+  width: 100% !important;
+  font-size: inherit;
+  font-family: inherit;
+}
+
+:host ::ng-deep .multiselect-dropdown .dropdown-btn {
+  display: inline-block;
+  border: 1px solid #adadad;
+  padding: 6px 12px;
+  margin-bottom: 0;
+  font-weight: 400;
+  line-height: 1.52857143;
+  text-align: left;
+  vertical-align: middle;
+  cursor: pointer;
+  background-image: none;
+  border-radius: 4px;
+}
+
+:host ::ng-deep .multiselect-item-checkbox {
+  padding: 0px 10px !important;
+  cursor: pointer;
+  font-size: 13px;
+  text-align: left;
+}
+
+:host ::ng-deep .multiselect-dropdown .dropdown-btn {
+  display: inline-block;
+  border: 1px solid #adadad;
+  width: 100%;
+  padding: 2px 12px !important;
+  margin-bottom: 0;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.52857143;
+  text-align: left;
+  vertical-align: middle;
+  cursor: pointer;
+  background-image: none;
+  border-radius: 4px;
+}
+
+:host ::ng-deep .multiselect-dropdown .dropdown-btn:last-child {
+  margin-right: 20px !important;
+}
+
+:host ::ng-deep .selected-item-container .selected-item {
+  font-size: 11px !important;
+  margin-top: 0.25rem !important;
+  padding-top: 0.1rem !important;
+}

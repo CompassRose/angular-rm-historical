@@ -1,0 +1,49 @@
+<form [formGroup]="dateByRegionOptions">
+
+  <div class="category-frame">
+
+    <div class="region-space"
+       *ngIf="(dataService.dashboardFacade.getGlobalRegions() | async) as regions">
+      <div class="font-14 ms-3 me-2 text-off-white">Region:</div>
+
+      <ng-multiselect-dropdown formControlName="region"
+         [placeholder]="'Select Regions'"
+         [data]="regions"
+         [settings]="dropdownSettings"
+         (onSelect)="onRegionSelect($event)"
+         (onDeSelect)="onRegionDeSelect($event)">
+      </ng-multiselect-dropdown>
+
+      <ng-template #regionLoad>
+        Loading...
+      </ng-template>
+    </div>
+
+    <div class="plottype-space"
+       *ngIf="(this.dataService.dashboardFacade.getplotType() | async)">
+      <div class="font-14 ms-3 me-2 text-off-white">Plot Type:</div>
+
+      <ng-multiselect-dropdown formControlName="plotType"
+         [data]="plotListLeft"
+         [placeholder]="'Select Plot Type'"
+         [settings]="dropdownSettingsSingle"
+         class="singleselect"
+         (onSelect)="onPlotTypeSelect($event)">
+      </ng-multiselect-dropdown>
+
+      <ng-template #plotLoad>
+        Loading...
+      </ng-template>
+    </div>
+    <div class="button-space me-4">
+
+
+
+      <button class="btn btn-primary-light me-2"
+         (click)="saveSelections()">Save</button>
+      <button title="Resets values to last saved"
+         class="btn btn-primary-light"
+         (click)="cancelEditMode()">Reset</button>
+    </div>
+  </div>
+</form>

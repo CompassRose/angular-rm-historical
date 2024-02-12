@@ -1,0 +1,23 @@
+<div id="detail-section">
+   <div *ngIf="selectedFlights"
+      class="details-label middle-sm">Selected Flight Details</div>
+   <div class="detail-frame">
+      <div echarts
+         id="piece-pie"
+         [options]="options"></div>
+      <div class="">
+         <ag-grid-angular #agGrid
+            style="width: 100%; height: 100%;"
+            id="myGrid"
+            class="ag-theme-balham-dark"
+            gridAutoHeight
+            gridAutoWidth
+            (gridReady)="onGridReady($event)"
+            [suppressPaginationPanel]="true"
+            [enableColResize]="true"
+            [gridOptions]="gridOptions"
+            [rowData]="rowData">
+         </ag-grid-angular>
+      </div>
+   </div>
+</div>

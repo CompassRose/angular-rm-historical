@@ -1,0 +1,407 @@
+@import "~@ng-select/ng-select/themes/default.theme.css";
+@import "./styles/configuration.scss";
+@import "./styles/fonts";
+@import "~ag-grid-community/styles/ag-theme-balham.css";
+
+:root {
+  --txt-bgwhite: rgba(255, 255, 255, 1);
+  --txt-offwhite: rgba(240, 240, 240, 1);
+  --txt-lesswhite: rgba(220, 220, 220, 1);
+
+  --accelya-primary-blue: #012169;
+  --accelya-primary-disabled: #575656;
+  --accelya-primary-color-disabled: #000000;
+  --accelya-primary-green: #425563;
+  --dl-color-txt-bg-neutralgrey: #708ca0;
+  --body-02-txt-color: #313f4a;
+  --bg-light-blue: #dee7f8;
+  --bs-white: white;
+
+  // Button states
+  --button-primary-blue-hover: #344d87;
+  --button-primary-blue-pressed: #011a54;
+
+  --accelya-primary-red: #df4661;
+  --button-primary-red-hover: #e56b81;
+  --button-primary-red-pressed: #b2384e;
+
+  --darkgreyd-5: rgba(47, 60, 70, 1);
+  --alertsdarkgreen: rgba(0, 131, 17, 1);
+}
+
+html,
+body {
+  width: 100vw;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  font-family: "Open Sans";
+  font-weight: 400;
+  font-size: 16px;
+  background-color: var(--dl-color-txt-bg-neutralgrey); // $accelya-primary-grey !important;
+  //background-color: var(--accelya-primary-blue) !important; // rgb(163, 163, 163) !important;
+  margin: 0;
+}
+
+* {
+  font-family: "Open Sans";
+}
+
+.btn {
+  --bs-btn-padding-x: 1rem !important;
+  --bs-btn-padding-y: 0.25rem !important;
+  --bs-btn-font-size: 12px !important;
+  --bs-btn-font-weight: 400 !important;
+  --bs-btn-line-height: 16px !important;
+}
+
+.btn-primary-1 {
+  --bs-btn-color: var(--bs-white) !important;
+  --bs-btn-bg: var(--accelya-primary-blue) !important;
+  --bs-btn-disabled-bg: var(--accelya-primary-disabled) !important;
+  --bs-btn-disabled-color: var(--accelya-primary-color-disabled) !important;
+  --bs-btn-border-color: var(--button-border);
+  --bs-border-radius: 4px !important;
+  --bs-btn-hover-color: var(--bs-white);
+  --bs-btn-hover-bg: var(--button-primary-blue-hover) !important;
+  --bs-btn-hover-border-color: var(--button-border-hover);
+  //--bs-btn-focus-shadow-rgb: var(--bd-violet-rgb);
+  --bs-btn-focus-shadow-rgb: var(--bs-white) !important;
+  --bs-btn-active-color: var(--bs-btn-hover-color) !important;
+  --bs-btn-active-bg: var(--button-primary-blue-pressed) !important;
+  // --bs-btn-active-border-color: #{shade-color($bd-violet, 20%)};
+}
+
+.btn-primary-light {
+  --bs-btn-color: var(--bs-white) !important;
+  --bs-btn-bg: var(--accelya-primary-blue) !important;
+  --bs-btn-disabled-bg: var(--accelya-primary-disabled) !important;
+  --bs-btn-disabled-color: var(--accelya-primary-color-disabled) !important;
+  --bs-btn-border-color: var(--txt-lesswhite) !important;
+  --bs-border-radius: 4px !important;
+  --bs-btn-hover-color: var(--bs-white);
+  --bs-btn-hover-bg: var(--button-primary-blue-hover) !important;
+  --bs-btn-hover-border-color: var(--button-border-hover);
+  //--bs-btn-focus-shadow-rgb: var(--bd-violet-rgb);
+  --bs-btn-focus-shadow-rgb: var(--bs-white) !important;
+  --bs-btn-active-color: var(--bs-btn-hover-color) !important;
+  --bs-btn-active-bg: var(--button-primary-blue-pressed) !important;
+  // --bs-btn-active-border-color: #{shade-color($bd-violet, 20%)};
+}
+
+.arrow-button {
+  width: 28px;
+  height: 28px;
+}
+
+.move-left {
+  position: absolute;
+  z-index: 1002;
+  margin-top: 15px;
+  margin-left: -40px;
+}
+
+.arrow-right-left {
+  width: 24px !important;
+  height: 24px !important;
+  transform: scale(1.2);
+  background-image: url(./assets/svgs/arrow-square-left.svg);
+  background-repeat: no-repeat;
+}
+
+.arrow-right-right {
+  width: 24px !important;
+  height: 24px !important;
+  transform: scale(1.2);
+  background-image: url(./assets/svgs/arrow-square-right.svg);
+  background-repeat: no-repeat;
+}
+
+@keyframes pulse {
+  0% {
+    stroke: #00f; /* Initial color */
+  }
+  50% {
+    stroke: #f00; /* Intermediate color */
+  }
+  100% {
+    stroke: #00f; /* Final color */
+  }
+}
+
+// .arrow-right-left .pulse-stroke {
+//   animation: pulse 2s infinite !important; /* 2s duration, infinite loop */
+// }
+
+// .arrow-right-left {
+//   transition: all 0.3s ease-in-out;
+// }
+
+// .arrow-right-left,
+// .arrow-right-right {
+//   filter: invert(27%) sepia(51%) saturate(2878%) hue-rotate(246deg) brightness(104%) contrast(97%);
+// }
+
+// .arrow-right-left:hover,
+// .arrow-right-right:hover {
+//   fill: blue;
+//   stroke: blue;
+// }
+
+.arrow-right-left:hover,
+.arrow-right-right:hover {
+  filter: invert(50%) sepia(40%) saturate(2278%) hue-rotate(20deg) brightness(104%) contrast(97%);
+}
+
+// .svg-icon {
+//   /* Place the icon on the text baseline. */
+//   position: relative;
+//   top: 0.125em;
+
+//   /* Prevent the icon from shrinking inside a flex container. */
+//   flex-shrink: 0;
+
+//   /* Scale the icon to match the font-size of the parent element. */
+//   height: 1em;
+//   width: 1em;
+
+//   /* Let the icon take whatever color the parent has. */
+//   fill: currentColor;
+
+//   /*
+//      * If the icon is used on a link, which has a color transition,
+//      * we can also use a transition on the fill value.
+//     */
+//   transition: fill 0.3s;
+// }
+
+.white-space-no-wrap {
+  white-space: nowrap !important;
+}
+
+.y-centered-row-flex-nowrap {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap !important;
+}
+
+.echart-container {
+  width: 100% !important;
+  height: 100%;
+}
+
+$screen-width-modifier: 100%;
+
+.text-off-white {
+  color: var(--txt-offwhite);
+}
+
+.text-p-blue {
+  color: var(--accelya-primary-blue);
+}
+
+.off-black-text {
+  color: $brand-off-black-text;
+}
+
+.link-blue-text {
+  color: $brand-link-blue-text;
+}
+
+.dark-gray-text {
+  color: $brand-dark-gray-text;
+}
+
+.white-contrast-text {
+  color: $brand-off-white-lt;
+}
+
+.medium-gray-text {
+  color: $brand-medium-gray-text;
+}
+.flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+.w-0 {
+  width: 0 !important;
+}
+
+.label-btn {
+  display: block;
+  background: #0d6efd;
+  color: hsla(215, 0%, 100%, 1);
+  border: 1px solid hsla(150, 75%, 50%, 0.5);
+  border-radius: 4px;
+  font-size: 13px;
+  height: 30px;
+  text-align: center;
+  position: relative;
+  // padding-right: 5px !important;
+  // padding-left: 5px;
+  text-decoration: none;
+
+  &:hover {
+    border: 1px solid hsla(150, 75%, 50%, 1);
+  }
+}
+
+.icon-button {
+  padding: 0px 4px 3px 7px;
+
+  i-bs {
+    color: white;
+    font-size: 13px;
+  }
+}
+
+.noselect {
+  -webkit-touch-callout: none;
+  /* iOS Safari */
+  -webkit-user-select: none;
+  /* Safari */
+  -khtml-user-select: none;
+  /* Konqueror HTML */
+  -moz-user-select: none;
+  /* Old versions of Firefox */
+  -ms-user-select: none;
+  /* Internet Explorer/Edge */
+  user-select: none !important;
+  /* Non-prefixed version, currently
+    supported by Chrome, Opera and Firefox */
+}
+
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 5px rgb(197, 197, 197);
+  border-radius: 1px;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: rgb(139, 139, 139);
+  border-radius: 1px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(99, 99, 99);
+}
+// Toggle button version in AU Visualization chart
+input[type="radio"] {
+  display: none;
+
+  &:not(:disabled) ~ label {
+    cursor: pointer;
+    padding: 0.16rem 0 !important;
+    width: 105px !important;
+  }
+
+  &:disabled ~ label {
+    color: hsla(150, 5%, 75%, 1);
+    border-color: hsla(150, 5%, 75%, 1);
+    background: gray;
+    width: 105px !important;
+    padding: 0.16rem 0 !important;
+    box-shadow: none;
+    cursor: not-allowed;
+  }
+}
+
+input[type="radio"]:not(:checked) ~ label {
+  color: white;
+}
+
+input[type="radio"]:checked + label {
+  background: #0d6efd;
+  width: 105px !important;
+  padding: 0.16rem 0 !important;
+  color: hsla(215, 0%, 100%, 1);
+}
+
+.mat-slide-toggle {
+  transform: scale(0.7) !important;
+}
+
+.mat-slide-toggle-bar {
+  background-color: var(--accelya-primary-blue) !important;
+}
+
+:host ::ng-deep .mat-slide-toggle.mat-checked:not(.mat-disabled) .mat-slide-toggle-bar {
+  background-color: #49c5b6;
+}
+
+:host ::ng-deep .mat-slide-toggle.mat-checked:not(.mat-disabled) .mat-slide-toggle-thumb {
+  background-color: #49c5b6;
+}
+
+// .mat-slide-toggle.mat-checked:not(.mat-disabled) .mat-slide-toggle-bar {
+//   background-color: #49c5b6 !important;
+// }
+
+.mat-mdc-slide-toggle .mdc-switch .mdc-switch__track {
+  height: var(--mdc-switch-track-height, 14px) !important;
+  background-color: red;
+}
+
+.mat-mdc-slide-toggle {
+  --mdc-switch-disabled-selected-handle-color: #424242;
+  --mdc-switch-disabled-unselected-handle-color: #424242;
+  --mdc-switch-disabled-selected-track-color: #424242;
+  --mdc-switch-disabled-unselected-track-color: #424242;
+  --mdc-switch-unselected-focus-state-layer-color: #424242;
+  --mdc-switch-unselected-pressed-state-layer-color: #424242;
+  --mdc-switch-unselected-hover-state-layer-color: #424242;
+  --mdc-switch-unselected-focus-track-color: #e0e0e0;
+  --mdc-switch-unselected-hover-track-color: #e0e0e0;
+  --mdc-switch-unselected-pressed-track-color: #e0e0e0;
+  --mdc-switch-unselected-track-color: #e0e0e0;
+  --mdc-switch-unselected-focus-handle-color: #1e88e5 !important; // #212121;
+  --mdc-switch-unselected-hover-handle-color: #1e88e5 !important; //#212121;
+  --mdc-switch-unselected-pressed-handle-color: #1e88e5 !important;
+  --mdc-switch-handle-surface-color: var(--mdc-theme-surface, #fff);
+  --mdc-switch-unselected-handle-color: #1e88e5 !important;
+  --mdc-switch-selected-icon-color: #1e88e5 !important; // #fff;
+  --mdc-switch-disabled-selected-icon-color: #1e88e5 !important;
+  --mdc-switch-disabled-unselected-icon-color: #1e88e5 !important; // #fff;
+  --mdc-switch-unselected-icon-color: #1e88e5 !important; // #fff;
+}
+
+.mat-mdc-slide-toggle.mat-accent {
+  --mdc-switch-selected-focus-state-layer-color: #1e88e5;
+  --mdc-switch-selected-handle-color: #1e88e5;
+  --mdc-switch-selected-hover-state-layer-color: #1e88e5;
+  --mdc-switch-selected-pressed-state-layer-color: #1e88e5;
+  --mdc-switch-selected-focus-handle-color: #0d47a1;
+  --mdc-switch-selected-hover-handle-color: #0d47a1;
+  --mdc-switch-selected-pressed-handle-color: #0d47a1;
+  --mdc-switch-selected-focus-track-color: #64b5f6;
+  --mdc-switch-selected-hover-track-color: #64b5f6;
+  --mdc-switch-selected-pressed-track-color: #64b5f6;
+  --mdc-switch-selected-track-color: #64b5f6;
+}
+
+.zoomin-svg {
+  width: 20px;
+  height: 20px;
+  background-image: url("./assets/svgs/zoomin.svg") !important;
+  background-repeat: no-repeat;
+}
+
+.zoomout-svg {
+  width: 20px;
+  height: 20px;
+  background-image: url("./assets/svgs/zoomout.svg") !important;
+  background-repeat: no-repeat;
+}
+
+.ag-paging-panel {
+  border-top: 1px solid;
+  border-top-color: var(--ag-border-color);
+  color: var(--ag-secondary-foreground-color);
+  height: 80px;
+}
