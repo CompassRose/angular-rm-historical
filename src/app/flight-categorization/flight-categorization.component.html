@@ -1,0 +1,36 @@
+<div class="container">
+    <div class='flight-main'>
+        <div class="metric-selection py-2 ">
+            <set-query></set-query>
+        </div>
+        <div class="d-flex w-100">
+            <div class=""
+               [ngClass]="openDetailsFlag ? 'w-75' : 'w-100'">
+                <div class="scatter-window w-100">
+
+                    <span class="w-100"
+                       *ngIf="dataService.dashboardFacade.selectedScreen === 0">
+                        <scatter-chart [whichMetricState]="dataService.dashboardFacade.selectedScreen"></scatter-chart>
+                    </span>
+                    <span class="w-100"
+                       *ngIf="dataService.dashboardFacade.selectedScreen === 1">
+                        <scatter-chart-cluster
+                           [whichMetricState]="dataService.dashboardFacade.selectedScreen"></scatter-chart-cluster>
+                    </span>
+                </div>
+                <world-map></world-map>
+            </div>
+            <div class="details-component"
+               [ngClass]="openDetailsFlag ? 'w-25' : 'w-0'">
+                <div class="move-left"
+                   *ngIf="(dataService.dashboardFacade.getBrushSelectedFlights() | async)?.length > 0"
+                   (click)="openDetailsWindow()">
+                    <div class="arrow-right-left"
+                       [ngClass]="!openDetailsFlag ? 'arrow-right-left' : 'arrow-right-right'"> </div>
+                </div>
+                <details-container [plotTypeSelectInput]="plotTypeSelect">
+                </details-container>
+            </div>
+        </div>
+    </div>
+</div>

@@ -44,7 +44,7 @@ export class DashboardState {
 
 
 
-  //public tableColumnApiSubject$ = new BehaviorSubject<QueryMap>(null);
+  public tableColumnApiSubject$ = new BehaviorSubject<QueryMap>(null);
   public codeMirrorOptionsSubject$ = new BehaviorSubject<any>(null);
 
   public tableApiSubject$ = new BehaviorSubject<TableValues[]>([]);
@@ -110,16 +110,14 @@ export class DashboardState {
     return this.previousYearDataSubject$
       .pipe(
         map((items: any[]) => {
+          console.log('previousYearDataSubject$ previousYearDataSubject$ ********************')
           return flightDataMapper.convertValuesToMetricModel(items);
         }));
   }
 
   public getStaticCompFareData(): Observable<any[]> {
     return this.competitiveFareSubject$
-      .pipe(
-        map((items: any[]) => {
-          return flightDataMapper.convertCompetitiveFareModel(items);
-        }));
+      .pipe(map((items: any[]) => flightDataMapper.convertCompetitiveFareModel(items)));
   }
 
 
@@ -139,8 +137,6 @@ export class DashboardState {
     return this.categorizedValuesSubject$
       .pipe(
         map((items: any[]) => {
-
-
           if (items.length > 0) {
             //console.log('items ', items)
             returnItems = flightDataMapper.convertCategorizedModel(items, region, plot, ndoRanges);
@@ -159,17 +155,17 @@ export class DashboardState {
     this.tableApiSubject$.next(tableData);
   }
 
-  // public setTableColumnApiValues(tableData: QueryMap) {
-  //   this.tableColumnApiSubject$.next(tableData);
-  // }
+  public setTableColumnApiValues(tableData: QueryMap) {
+    this.tableColumnApiSubject$.next(tableData);
+  }
 
   public getTableApiValues(): Observable<TableValues[]> {
     return this.tableApiSubject$.asObservable();
   }
 
-  // public getTablColumnApiValues(): Observable<QueryMap> {
-  //   return this.tableColumnApiSubject$.asObservable();
-  // }
+  public getTablColumnApiValues(): Observable<QueryMap> {
+    return this.tableColumnApiSubject$.asObservable();
+  }
 
   public setAnalyticApiValues(values: any) {
     this.apiCallSubBehaviorSubject$.next(values);
@@ -231,10 +227,12 @@ export class DashboardState {
 
   public setMonthlyAvailabilityData(previousYearValues: any[]) {
     this.availabilityCollection.push(previousYearValues);
+    console.log('setMonthlyAvailabilityData ', previousYearValues)
     this.monthlyAvailabiltySubject$.next(this.availabilityCollection);
   }
 
   public getMonthlyAvailabilityData(): Observable<any[]> {
+    console.log('getMonthlyAvailabilityData )))))))))))))))))))))))))))   ')
     return this.monthlyAvailabiltySubject$.asObservable();
   }
 

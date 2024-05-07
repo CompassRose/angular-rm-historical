@@ -34,9 +34,12 @@ export class MetricMapper {
     return this.setCompetitiveFareData(metricEntity, 'compFare');
   }
 
+
+
   public convertCategorizedModel = (metricEntity: any[], region: any[], plot: number, ndoRanges: any[]): any[] => {
 
     this.categorizedFlightData = metricEntity;
+    this.getGlobalRegionsList(metricEntity)
 
     if (!this.testRegions()) {
       this.regionCollectionSubject$.next(this.getGlobalRegionsList(metricEntity));
@@ -47,8 +50,9 @@ export class MetricMapper {
 
   // From Selected regions/plot type selection in New Tile Hacky string compare --TODO remove
   public setCategorizedDetail(regions: any[], plot: number, ndoRanges: any[]): any[] {
-
+    // console.log('setCategorizedDetail  setCategorizedDetail setCategorizedDetail\n\n')
     let newRanges: any[] = [];
+
     if (ndoRanges.length > 0) {
       newRanges = this.getNdoRangeValues(ndoRanges);
     }
@@ -62,7 +66,8 @@ export class MetricMapper {
     }
 
     this.regionSelectedFlights = [];
-    console.log('   --- ', this.categorizedFlightData)
+
+    //console.log('   --- ', this.categorizedFlightData)
     // Respects selected NDO ranges
     this.categorizedFlightData.map((d: any, i) => {
 
@@ -72,6 +77,7 @@ export class MetricMapper {
           if (newRanges.length > 0) {
             newRanges.forEach((n, i) => {
               if (+d.Ndo > n.from && +d.Ndo < n.to) {
+
                 this.regionSelectedFlights.push([+d.Ndo, d[type], +d.Ntile, +d.flt, d.Departure, d.Origin, d.Destination, a]);
               }
             })
@@ -94,7 +100,7 @@ export class MetricMapper {
 
   // Region list for flight categorization
   public getGlobalRegionsList(data: any): any {
-    //console.log('getGlobalRegionsList ', data)
+    // console.log('getGlobalRegionsList ', data)
     data.map((d: any, i: number) => {
       if (!this.regionCollection.includes(d.Region)) {
 
@@ -115,11 +121,16 @@ export class MetricMapper {
   public setDestinationCollection(): any {
     if (this.regionSelectedFlights.length > 1) {
       this.regionSelectedFlights.map((d: any, i) => {
+        // if (i < 10) {
+        //   console.log('d ', d)
+        // }
+
         if (!this.regionSelectedDestinations.includes(d[6])) {
           this.regionSelectedDestinations.push(d[6])
         }
       })
     }
+
     return this.regionSelectedDestinations;
   }
 
@@ -128,7 +139,7 @@ export class MetricMapper {
     let regionState = false;
     this.regionCollectionSubject$
       .subscribe(res => {
-        // console.log('regionCollectionSubject$ ', res)
+        //console.log('regionCollectionSubject$ ', res)
         regionState = res.length > 0 ? true : false;
       })
     return regionState;

@@ -1,131 +1,82 @@
-<div class="flex-basis-main">
-  <div class="header navy-background py-1 px-2">
-    <div class="y-centered-row-flex-nowrap w-100">
-      <section class="y-centered-row-flex-nowrap">
-        <img style="width: 155px; height: 50px;"
-           src="{{pathToAssets}}accelyaTextLogo.jpg" />
-        <span class="font-headline fw-400 ms-4">Market Analysis</span>
-      </section>
-    </div>
-    <div class="d-flex align-items-center ms-auto"
-       *ngIf="(screenGroupSubject$ | async)?.length > 1">
-      <div class="d-flex align-items-center me-2"
-         *ngFor="let item of (screenGroupSubject$ | async) let $idx = index;">
-        <input type="radio"
-           id="{{$idx}}"
-           name="select"
-           [disabled]="item.disabled ? true : false"
-           value="$idx"
-           [checked]="item.id === selectedScreen"
-           (change)="setScreen($idx)" />
-        <label for="{{item.id}}">
-          <div class="noselect multiple font-12 px-1">{{item.name}}</div>
-        </label>
-      </div>
-    </div>
-    <div class="y-centered-row-flex-nowrap ms-auto me-4">
-      <span class="y-centered-row-flex-nowrap me-4">
-        <div class="font-12">NDO</div>
-        <mat-slide-toggle class="mat-slide-toggle"
-           [ngModel]="isNdoChecked"></mat-slide-toggle>
-        <div class="font-12">Dates</div>
-      </span>
-      <span class="y-centered-row-flex-nowrap me-4">
-        <div class="font-12">Light</div>
-        <mat-slide-toggle class="mat-slide-toggle"
-           [(ngModel)]="isThemeChange"
-           (change)="onThemeChange($event)"></mat-slide-toggle>
-        <div class="font-12">Dark</div>
-      </span>
-      <div *ngIf="frameRateCounterState"
-         class="font-13 fw-600">FPS: {{fps$ | async}}</div>
-    </div>
-  </div>
-  <div class='flex-main'>
-    <div class="metric-selection py-2 my-1">
-      <set-query></set-query>
-    </div>
+<div class="pre-header w-100">
 
-    <div class="d-flex ms-1 me-1">
-      <div class="flex-column"
-         [ngClass]="openDetailsFlag ? 'w-75' : 'w-100'">
-        <scatter-chart></scatter-chart>
-        <world-map></world-map>
-        <!-- <div class="world-component my-2">
-            <metric-comparison [axisViewInput]="xAxisViewType"
-              [themeSelectInput]="chartThemeSelect">
-            </metric-comparison>
-          </div> -->
-      </div>
-      <div class="details-component ms-1"
-         [ngClass]="openDetailsFlag ? 'w-25' : 'w-0'">
-        <div class="move-left"
-           *ngIf="(dataService.dashboardFacade.getBrushSelectedFlights() | async)?.length > 0"
-           (click)="openDetailsWindow()">
-          <div class="arrow-right-left"
-             [ngClass]="!openDetailsFlag ? 'arrow-right-left' : 'arrow-right-right'"> </div>
+    <div class="container d-flex align-items-center">
+        <div class="accelya-logo-svg"></div>
+
+        <!-- <span class="airRm-text">AirRM </span> -->
+        <section class="title-text me-5">Market Analysis</section>
+
+        <div class="y-centered-row-flex-nowrap ms-auto me-4">
+            <span class="y-centered-row-flex-nowrap me-4">
+                <div class="font-12">NDO</div>
+                <mat-slide-toggle class="mat-slide-toggle"
+                   [ngModel]="isNdoChecked"></mat-slide-toggle>
+                <div class="font-12">Dates</div>
+            </span>
+            <span class="y-centered-row-flex-nowrap me-4">
+                <div class="font-12">Light</div>
+                <mat-slide-toggle class="mat-slide-toggle"
+                   [(ngModel)]="isThemeChange"
+                   (change)="onThemeChange($event)"></mat-slide-toggle>
+                <div class="font-12">Dark</div>
+            </span>
+            <div *ngIf="frameRateCounterState"
+               class="font-13 fw-600">FPS: {{fps$ | async}}</div>
         </div>
-        <details-container [plotTypeSelectInput]="plotTypeSelect">
-        </details-container>
-      </div>
     </div>
-
-  </div>
-  <div class="footer">
-    <span class="accelya-logo-svg"></span>
-    <a class="font-12 fw-600  text-p-blue me-2 no-underline"
-       (click)="toggleFrameRate()">v: {{currentApplicationVersion}}</a>
-    <span class="privacy-text">
-      Privacy | Terms & Conditions
-    </span>
-  </div>
 </div>
-<!-- <div class="flight-specifics me-4 mt-1">
-      <div class="flight-header-main"
-        *ngIf="selectedFlightValues">
-        <div class="flight-frame d-flex">
-          <div class="status-col me-4 mt-1">
-            <div class="font-16 fw-600"> {{selectedFlightValues.origin}}</div>
-            <span class="font-12">{{selectedFlightValues.fullOrigin}}</span>
-          </div>
-          <div class="d-flex nowrap">
-            <div class="status-col text-start me-3 font-12 fw-600">
-              <div class="mt-3">{{selectedFlightValues.departureDateTime}}</div>
+<div class="container d-flex align-items-center">
+    <div class="triad-parent">
+        <div class="triad-suppot">
+            <a [ngClass]="focusedElement === 0 ? 'selection-triad focused' : 'selection-triad not-active'"
+               (click)="setFocusedElement(0)"
+               routerLink="/flightCategories"
+               routerLinkActive="active"
+               ariaCurrentWhenActive="page">
+                <!-- <div [ngClass]="focusedElement === 0 ? ' focused' : ' not-active'">
+                    <div class="circle-number">1</div>
+                </div> -->
+                <div class="path-link">Flight Selection</div>
+            </a>
+            <a [ngClass]="focusedElement === 1 ? 'selection-triad focused' : 'selection-triad not-active'"
+               (click)="setFocusedElement(1)"
+               routerLink="/historical"
+               ariaCurrentWhenActive="page">
+                <!-- <div
+                   [ngClass]="focusedElement === 1 ? 'selection-number-circle focused' : 'selection-number-circle not-active'">
+                    <div class="circle-number">2</div>
+                </div> -->
+                <div>Historical Events</div>
+            </a>
+            <a [ngClass]="focusedElement === 2 ? 'selection-triad focused' : 'selection-triad not-active'"
+               (click)="setFocusedElement(2)"
+               routerLink="/workbench"
+               ariaCurrentWhenActive="page">
+                <!-- <div
+                   [ngClass]="focusedElement === 3 ? 'selection-number-circle focused' : 'selection-number-circle not-active'">
 
-            </div>
-            <div class="logo-circle m-auto">
-              <img class="tail-img-sm logo-tail"
-                src="{{pathToAssets}}2IbTailArt.png">
-            </div>
-            <div class="status-col ms-4 font-12 fw-600">
-              <div class="mt-3">{{selectedFlightValues.arrivalDateTime}}</div>
+                    <div class="circle-number">3</div>
 
-            </div>
-          </div>
-          <div class="status-col ms-4 mt-1">
-            <div class="font-16 fw-600 align-right">{{selectedFlightValues.destination}}</div>
-            <div class="font-12">{{selectedFlightValues.fullDestination}}</div>
-          </div>
+                </div> -->
+                <div>Confirmation</div>
+            </a>
+            <a [ngClass]="focusedElement === 3 ? 'selection-triad focused' : 'selection-triad not-active'"
+               (click)="setFocusedElement(3)"
+               routerLink="/analytics"
+               ariaCurrentWhenActive="page">
+                <!-- <div
+                               [ngClass]="focusedElement === 3 ? 'selection-number-circle focused' : 'selection-number-circle not-active'">
+            
+                                <div class="circle-number">3</div>
+            
+                            </div> -->
+                <div>Analytics</div>
+            </a>
+
+
         </div>
-      </div>
-    </div> -->
-
-<!-- <span class="font-14 fw-600 me-4 ml-auto">Departure: &nbsp;8:05am</span>
-    <div class="booking-container ms-5 font-14 fw-600">
-      <div class="me-2">Total/Booked:</div>
-      <div class="me-3">
-        {{sharedDatasetService.bucketDetails[0].Aus}} /
-        {{sharedDatasetService.totalBookingsCollector}}
-      </div>
-    </div> -->
-<!-- <div class="d-flex me-5">
-      <div id="myProgress">
-        <div id="myBar">0%</div>
-      </div>
-    </div> -->
-<!-- <a type="button"
-      class="label-btn longer-versions me-2 text-nowrap"
-      (click)="themeControlService.toggleLightMode()"
-      title="Use API Values">
-      {{themeControlService.chartThemeText}} Mode
-    </a> -->
+    </div>
+</div>
+<div>
+    <router-outlet></router-outlet>
+</div>

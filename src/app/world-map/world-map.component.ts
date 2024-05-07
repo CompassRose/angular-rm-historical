@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, OnDestroy, ViewEncapsulation, ElementRef, AfterViewInit } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnDestroy, OnInit, ViewEncapsulation, ElementRef, AfterViewInit } from '@angular/core';
 import { DashboardFacade } from '../dashboard.facade';
 
 import { AppConstants } from '../dashboard-constants';
@@ -28,7 +28,7 @@ declare let document;
     styleUrls: ['./world-map.component.scss']
 })
 
-export class WorldMapComponent implements AfterViewInit, OnDestroy {
+export class WorldMapComponent implements AfterViewInit, OnInit, OnDestroy {
 
     public selectedFlightGroups: any[] = [];
     public targetElement: any;
@@ -111,8 +111,7 @@ export class WorldMapComponent implements AfterViewInit, OnDestroy {
 
         this.dashboardFacade.worldCoordinatesBehaviorSubject$
             .subscribe((worldValues: any) => {
-
-                //  console.log('globalWorldValues ', worldValues)
+                ///console.log('globalWorldValues ', worldValues)
                 this.globalWorldValues = worldValues;
                 this.registerWorldMap();
             })
@@ -142,10 +141,13 @@ export class WorldMapComponent implements AfterViewInit, OnDestroy {
                         this.generateChart();
                     }
                     setTimeout(() => {
-                        this.resetMapVolume();
+                        //  this.resetMapVolume();
                     }, 100)
                 }
             })
+    }
+
+    public ngOnInit(): void {
     }
 
     public ngAfterViewInit(): void {
@@ -184,20 +186,23 @@ export class WorldMapComponent implements AfterViewInit, OnDestroy {
     public resetMapVolume() {
 
         const boundingCoords = [[-180, -90], [180, 90]]
-        // console.log('resetMapVolume ', boundingCoords)
+        console.log('resetMapVolume ', boundingCoords)
         this.boundingCorners = [
             [-170, 70],
             [170, -40]
         ];
 
-        this.myChart.setOption({
-            geo: {
-                boundingCoords: [
-                    this.boundingCorners[0],
-                    this.boundingCorners[1]
-                ],
-            }
-        });
+        if (this.myChart) {
+            this.myChart.setOption({
+                geo: {
+                    boundingCoords: [
+                        this.boundingCorners[0],
+                        this.boundingCorners[1]
+                    ],
+                }
+            });
+        }
+
     }
 
 

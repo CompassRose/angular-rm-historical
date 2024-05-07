@@ -1,0 +1,37 @@
+.analytics-output {
+  color: #fff;
+  height: calc(100vh * .825) !important;
+  padding: 8px;
+  width: auto !important;
+  overflow-y: auto;
+}
+
+:host ::ng-deep .CodeMirror-gutter-elt {
+  position: absolute;
+  cursor: default;
+  width: 18px !important;
+  z-index: 4;
+}
+
+
+:host ::ng-deep .CodeMirror-guttermarker-subtle {
+  color: red !important;
+}
+
+
+:host ::ng-deep .CodeMirror-foldgutter-open:after {
+  content: "\25BE";
+  font-size: 24px !important;
+  font-weight: bold !important;
+}
+
+:host ::ng-deep .CodeMirror-foldgutter-folded:after {
+  content: "\25B8";
+  font-size: 24px !important;
+  font-weight: bold !important;
+}
+
+:host ::ng-deep .CodeMirror-foldgutter {
+  margin-left: 15px !important;
+  width: 20px !important;
+}

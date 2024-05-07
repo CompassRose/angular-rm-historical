@@ -1,0 +1,47 @@
+@import "../../styles/configuration.scss";
+
+.accelya-logo-svg {
+    background-image: url("../../assets/svgs/accelya-logo.svg") !important;
+    background-repeat: no-repeat;
+    width: 150px;
+    height: 38px;
+
+    @media (max-width: 550px) {
+        width: 0px;
+    }
+}
+
+.collapse-js-button {
+    z-index: 10;
+    margin-left: -20px;
+    margin-top: -8px;
+    width: 35px;
+    height: 42px;
+    background-color: #263238;
+    color: white;
+    font-size: 2.2rem;
+    font-weight: 600;
+    border-top-right-radius: 0.5rem;
+    border-bottom-right-radius: 0.5rem;
+    padding: 10px !important;
+
+    &:hover {
+        background-color: lighten($brand-link-blue-text, 10%) !important;
+    }
+}
+
+.mat-slide-toggle {
+    transform: scale(0.7) !important;
+}
+
+.mat-slide-toggle-bar {
+    background-color: var(--accelya-primary-blue) !important;
+}
+
+:host ::ng-deep .mat-slide-toggle.mat-checked:not(.mat-disabled) .mat-slide-toggle-bar {
+    background-color: #49c5b6;
+}
+
+:host ::ng-deep .mat-slide-toggle.mat-checked:not(.mat-disabled) .mat-slide-toggle-thumb {
+    background-color: #49c5b6;
+}

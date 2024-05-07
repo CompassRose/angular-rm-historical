@@ -12,13 +12,14 @@ export class DataService {
 
   constructor(public dashboardFacade: DashboardFacade) {
 
-    //this.dashboardFacade.loadProgressiveData();
-    //this.dashboardFacade.loadCompetitiveFareData();
+
     this.dashboardFacade.loadCategorizedData('EURCANARY');
     this.dashboardFacade.loadAirportCodes();
     this.dashboardFacade.getMyWorld();
-
     this.dashboardFacade.loadClusteredData();
+
+    this.dashboardFacade.loadProgressiveData();
+    this.dashboardFacade.loadCompetitiveFareData();
 
     // this.dashboardFacade.loadMonthlyAvailableData('MonthlyAvailable_URL');
     // this.dashboardFacade.loadMonthlyAvailableData('MonthlyAvailable1_URL');
@@ -26,9 +27,9 @@ export class DataService {
     // this.dashboardFacade.loadMonthlyAvailableData('MonthlyAvailable52_URL');
 
     // Mock Values
-    // this.dashboardFacade.loadColumns(this.flightscore_url);
-    // this.dashboardFacade.loadFlightAnalytics();
-    // this.dashboardFacade.loadInventory();
+    this.dashboardFacade.loadColumns(this.flightscore_url);
+    ///this.dashboardFacade.loadFlightAnalytics();
+    this.dashboardFacade.loadInventory();
 
   }
 }

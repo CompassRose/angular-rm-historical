@@ -1,15 +1,26 @@
-import { Component, OnChanges, Input, OnDestroy, ElementRef, AfterViewInit, SimpleChange } from '@angular/core';
+import { Component, OnChanges, Input, OnDestroy, ElementRef, OnInit, AfterViewInit, SimpleChange } from '@angular/core';
 
 //import { DashboardFacade } from '../../dashboard.facade';
 import { LineChartObject, SeasonalItems, HistoryData, ColumnValues, ODLocate, QueryItems, QueryMap, TableValues, InventoryValues } from '../models/dashboard.model';
 import { BehaviorSubject, Subject, Observable, debounceTime, distinctUntilChanged, tap, map } from 'rxjs';
-//import { MetricMapper } from '../services/flight-history-mapper';
 import * as moment from 'moment';
 import * as echarts from 'echarts';
 
 import { arrowUpPath, lockSymbol, unlockSymbol, activeState } from '../dashboard-constants';
 import { DashboardFacade } from '../dashboard.facade';
 import { MetricMapper } from '../services/flight-history-mapper';
+import { DataService } from '../config-data-service';
+
+export interface MetricHeader {
+    name: string;
+    type: string;
+    symbol: string;
+    yAxisIndex: number;
+}
+
+export interface MetricCollectionItem {
+    value: [number, number][];
+}
 
 const flightDataMapper = new MetricMapper();
 
@@ -19,7 +30,7 @@ const flightDataMapper = new MetricMapper();
     styleUrls: ['./metric-comparison-chart.component.scss'],
 })
 
-export class MetricComparisonComponent implements OnChanges, AfterViewInit, OnDestroy {
+export class MetricComparisonComponent implements OnChanges, AfterViewInit, OnInit, OnDestroy {
 
     public targetElement: any;
     public widthObserver: any;
@@ -54,7 +65,7 @@ export class MetricComparisonComponent implements OnChanges, AfterViewInit, OnDe
 
     public previousYearDataSubject$ = new Subject<HistoryData[]>();
 
-    public competitiveFareSubject$ = new Subject<any>();
+    //public competitiveFareSubject$ = new Subject<any>();
 
     @Input()
     public themeSelectInput: string = '';
@@ -63,7 +74,8 @@ export class MetricComparisonComponent implements OnChanges, AfterViewInit, OnDe
     public axisViewInput = false;
 
 
-    constructor(private dashboardFacade: DashboardFacade, private host: ElementRef) {
+    constructor(private dashboardFacade: DashboardFacade, private host: ElementRef, public dataService: DataService) {
+        console.log('HISTORICAL  COMPONENT LOADING ')
 
         this.setupEventListeners();
 
@@ -72,6 +84,15 @@ export class MetricComparisonComponent implements OnChanges, AfterViewInit, OnDe
             this.ndoDateCollection.push({ date: this.getFormattedData(nowPlusOneDay), ndo: i });
         }
     }
+
+    public ngOnInit(): void {
+        // console.log(' ngOnInit ngOnInit ngOnInit ')
+        this.dashboardFacade.loadProgressiveData();
+        this.dashboardFacade.loadCompetitiveFareData();
+        //console.log('test ', test)
+        this.createSvg('metric-comparison');
+    }
+
 
     public getFormattedData(date: any) {
         return moment.utc(date).format('MMM-D');
@@ -89,8 +110,10 @@ export class MetricComparisonComponent implements OnChanges, AfterViewInit, OnDe
 
     private setupEventListeners() {
 
+        //console.log('setupEventListeners ', flightDataMapper)
         this.dashboardFacade.getFlightHistory()
             .subscribe((values: any[]) => {
+                console.log('||||||||||||||||||  getStaticMetricData ', values)
                 this.progressionCollection = values[1];
                 this.lfFareCollection = values[0];
                 this.dashboardFacade.getCompetitiveFareValues()
@@ -115,11 +138,13 @@ export class MetricComparisonComponent implements OnChanges, AfterViewInit, OnDe
     }
 
     public ngOnDestroy(): void {
+        console.log('***************  ngOnDestroy ngOnDestroy ************************')
         this.widthObserver.unobserve(this.targetElement);
     }
 
+
     ngOnChanges(changes: { [propName: string]: SimpleChange }): void {
-        console.log('ngOnChanges ngOnChanges ', changes)
+
         if (changes['axisViewInput'] && !changes['axisViewInput'].firstChange) {
             this.axisViewSelection = changes['axisViewInput'].currentValue;
             setTimeout(() => {
@@ -206,6 +231,7 @@ export class MetricComparisonComponent implements OnChanges, AfterViewInit, OnDe
 
     // Initialize Charts, connect to selector ID, initialize echarts instances
     public createSvg(type: any) {
+
         const self = this;
 
         if (echarts.init(document.getElementById('metric-comparison') as HTMLCanvasElement)) {
@@ -222,7 +248,7 @@ export class MetricComparisonComponent implements OnChanges, AfterViewInit, OnDe
         const chart2: HTMLCanvasElement = document.getElementById('metric-comparison1') as HTMLCanvasElement;
         const chart3: HTMLCanvasElement = document.getElementById('metric-comparison2') as HTMLCanvasElement;
 
-        console.log('this.chartTheme ', this.chartTheme)
+        // console.log('this.chartTheme ', this.chartTheme)
 
         this.myChart1 = echarts.init(chart1, this.chartTheme);
         this.myChart2 = echarts.init(chart2, this.chartTheme);
@@ -234,21 +260,92 @@ export class MetricComparisonComponent implements OnChanges, AfterViewInit, OnDe
 
     }
 
+    private getProgressionDataOld(metric: string) {
+        console.log('getProgressionData ', metric, ' fareClasses ', this.fareClasses)
+        const series: any[] = [];
+        const metricHeaders: MetricHeader[] = this[`${metric}Headers`];
+        const metricCollection: MetricCollectionItem[] = this[`${metric}Collection`];
+
+        metricCollection.forEach((item, i) => {
+            const header = metricHeaders[i];
+            const sym = header.symbol === 'arrowUpPath' ? arrowUpPath : header.symbol;
+
+            series.push({
+                name: header.name,
+                type: 'line',
+                yAxisIndex: header.yAxisIndex,
+                symbol: sym,
+                lineStyle: {
+                    type: header.type,
+                    normal: {
+                        shadowColor: 'rgba(0, 0, 0, .2)',
+                        shadowBlur: 4,
+                        shadowOffsetY: 3,
+                        shadowOffsetX: 3,
+                    },
+                },
+                symbolSize: (value: any, params: any) => item.value[params.dataIndex][1] !== 0 ? 25 : 1,
+                symbolRotate: (value: any, params: any) => item.value[params.dataIndex][1] === 1 ? 0 : 180,
+                label: {
+                    show: true,
+                    position: 'inside',
+                    textStyle: {
+                        fontSize: 12,
+                        fontWeight: 'bold'
+                    },
+                    formatter(value: any) {
+                        if (i === 1 && item.value[value.dataIndex][1] !== 0) {
+                            return this.fareClasses[item.value[value.dataIndex][1]];
+                        } else if (i === 0 && item.value[value.dataIndex][1] !== 0) {
+                            return item.value[value.dataIndex][0];
+                        } else {
+                            return '';
+                        }
+                    },
+                },
+                areaStyle: {
+                    normal: {
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+                            offset: 0,
+                            color: 'rgba(0,149,202,0.1)'
+                        },
+                        {
+                            offset: 1,
+                            color: 'rgba(0,149,202,0)'
+                        }
+                        ], false),
+                        shadowColor: 'rgba(0,149,202, 0.2)',
+                        shadowBlur: 20
+                    }
+                },
+                data: item.value.map(d => d[0])
+            });
+        });
+
+        window.addEventListener('resize', this.refreshChartVisual);
+        return series;
+    }
+
 
     // Sets up series data for all charts
     private getProgressionData(metric: any) {
+
+        console.log('getProgressionData ', metric, ' fareClasses ', this.fareClasses)
 
         const self = this;
         const series: any[] = [];
         const legendValues = this[`${metric}Headers`];
 
-        this[`${metric}Collection`].map((item: any, i: any) => {
+        this[`${metric}Collection`].forEach((item: any, i: any) => {
+            console.log('item ', item)
             let sym;
-            if (this[`${metric}Headers`][i][2] === 'arrowUpPath') {
+
+            if (this[`${metric}Headers`][i][2] && this[`${metric}Headers`][i][2] === 'arrowUpPath') {
                 sym = arrowUpPath;
             } else {
                 sym = this[`${metric}Headers`][i][2];
             }
+
             series.push({
                 name: legendValues[i][1],
                 type: 'line',
@@ -318,10 +415,6 @@ export class MetricComparisonComponent implements OnChanges, AfterViewInit, OnDe
                 })
             });
         });
-
-
-
-        // this.refreshChartVisual();
 
         window.addEventListener('resize', this.refreshChartVisual);
         return series;
@@ -521,6 +614,7 @@ export class MetricComparisonComponent implements OnChanges, AfterViewInit, OnDe
             }, {
                 type: 'inside'
             }],
+
             series: this.getProgressionData(metric)
         });
     }

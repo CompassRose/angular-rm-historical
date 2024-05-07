@@ -49,6 +49,7 @@ export class DashboardApi {
 
   constructor(
     private http: HttpClient) {
+
   }
 
 
@@ -63,12 +64,13 @@ export class DashboardApi {
 
 
   public queryTableApi(): Observable<QueryMap> {
+    console.log(' full path ', `${this.apiUrl}/${this.apiTableQuery}`)
     return this.http.get<QueryMap>(
-      `${this.apiUrl}${this.apiTableQuery}`
+      `${this.apiUrl}/${this.apiTableQuery}`
     )
       .pipe(
         map(res => {
-
+          console.log('res ', res)
           return res;
         }),
         catchError(error => {
@@ -156,7 +158,7 @@ export class DashboardApi {
     return this.http
       .get(this.KpiCategorization_URL, { responseType: 'text' })
       .pipe(map(res => {
-        //console.log('\n\n\n res ', res)
+        // console.log('\n\n\n res ', res)
         return this.csvJSON(res);
       }));
   }

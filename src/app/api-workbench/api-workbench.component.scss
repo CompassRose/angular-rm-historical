@@ -1,0 +1,160 @@
+@import 'src/styles/configuration';
+@import 'src/styles/flexbox';
+@import 'src/styles/data-grid.scss';
+
+#chart1 {
+  width: calc(100% * .48) !important;
+  height: 100% !important;
+}
+
+#chart2 {
+  width: calc(100% * .48) !important;
+  height: 100% !important;
+}
+
+#chartAll {
+  width: calc(100%) !important;
+  height: 100% !important;
+}
+
+#api-workbench-output {
+  color: #fff;
+  height: calc(100vh * .825) !important;
+  padding: 8px;
+  width: 100% !important;
+  overflow-y: auto;
+}
+
+
+:host ::ng-deep .ng-dropdown-panel .ng-dropdown-panel-items .ng-option {
+  padding: 5px 5px !important;
+}
+
+
+:host ::ng-deep .script-select-dropdown {
+  font-size: 1.45rem !important;
+  width: 100% !important;
+}
+
+.selectable-script {
+  width: 70%;
+  padding: 3px 6px;
+  border: .15rem solid rgba(0, 0, 0, 0.267);
+
+  &:hover {
+    background-color: rgba(252, 255, 212, 0.61);
+    border-color: rgb(0, 68, 255);
+    color: black;
+  }
+}
+
+.icon-btn {
+  font-size: 2rem;
+
+  z-index: 10;
+
+  &:hover {
+    color: rgb(245, 116, 116);
+  }
+}
+
+:host ::ng-deep .mcf-input-wrapper input {
+  height: 2.9rem;
+}
+
+.isoBtn {
+  z-index: 30 !important;
+}
+
+:host ::ng-deep mcf-input>div {
+  padding-bottom: 0;
+}
+
+.spinner-placement {
+  @include flexbox();
+  @include justify-content(center);
+  @include align-items(center);
+
+  #loading {
+    position: absolute;
+    left: calc(100% * .5) !important;
+    top: calc(100% * .5) !important;
+    z-index: 1;
+    width: 60px;
+    height: 60px;
+    margin: 0 0 0 180px;
+    border: 10px solid #f3f3f3;
+    border-radius: 50%;
+    border-top: 10px solid #3498db;
+    animation: spin 1.2s linear infinite;
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.collapse-js-button {
+  z-index: 10;
+  margin-left: -20px;
+  margin-top: -8px;
+  width: 35px;
+  height: 42px;
+  background-color: #263238;
+  color: white;
+  font-size: 2.2rem;
+  font-weight: 600;
+  border-top-right-radius: .5rem;
+  border-bottom-right-radius: .5rem;
+  padding: 10px !important;
+
+  &:hover {
+    background-color: lighten($brand-link-blue-text, 10%) !important;
+  }
+}
+
+.script-editors {
+  @include flexbox();
+  @include flex-direction(column);
+  background-color: rgb(15, 15, 19);
+  border-right: 1px solid rgba(175, 175, 175, 0.4);
+}
+
+.script-editors-none {
+  display: none;
+}
+
+.select-column {
+  @include flex-direction(column);
+
+  .label {
+    color: white;
+  }
+}
+
+.CodeMirror {
+  border: 1px solid #eee;
+  height: auto;
+}
+
+#api-workbench-controls {
+  background-color: silver;
+  padding: 8px;
+}
+
+
+:host ::ng-deep .cm-s-material.CodeMirror {
+  background-color: #263238;
+  height: calc(100vh * .37) !important;
+  color: #EEFFFF;
+}
+
+.darkbg {
+  background-color: #000000;
+}

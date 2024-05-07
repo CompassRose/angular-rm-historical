@@ -1,7 +1,7 @@
 import { Component, Output, AfterViewInit, OnInit, EventEmitter, Input } from '@angular/core';
 import { DataService } from '../config-data-service';
 import { FormBuilder, FormGroup } from '@angular/forms';
-import { ndoDaysOut, plotListLeftOptions, cabinSelections, nDoDropdownSettings, dropdownSettings, dropdownSettingsSingle, departureDateOptions, scatterRightAxisOptions } from '../dashboard-constants';
+import { ndoDaysOut, plotListLeftOptions, cabinSelections, nDoDropdownSettings, dropdownSettings, dropdownSettingsSingle, departureDateOptions, marketAnalysisOptions } from '../dashboard-constants';
 import { QueryItems } from '../models/dashboard.model';
 import { arrows } from '../dashboard-constants';
 
@@ -16,15 +16,17 @@ import { cloneDeep } from 'lodash';
 export class SetQueryComponent implements OnInit {
 
   public dateByRegionOptions: FormGroup;
-  public dateByRegionSaved: FormGroup;
+  //public dateByRegionSaved: FormGroup;
 
   public selectedPlotType: number = 0;
+
   public selectedDepartureDate: string[] = [];
   public regionSpecificDestinations: string[] = [];
   public selectedDestinations: string[] = [];
   public ndoRangeOptions: any[] = [];
 
   public plotListLeft = plotListLeftOptions;
+
   public departureDateOptions = departureDateOptions;
   public metrics = cabinSelections;
   public nDoDropdownSettings = nDoDropdownSettings;
@@ -51,24 +53,40 @@ export class SetQueryComponent implements OnInit {
 
   public regionList: any[] = [];
 
+  public marketAnalysisOption = marketAnalysisOptions;
+
   constructor(public fb: FormBuilder, public dataService: DataService) {
 
 
     // initialize reactive forms
     this.dateByRegionOptions = fb.group({
       region: [],
-
+      ndoRange: [],
       plotType: this.plotListLeft[0]
     });
 
 
-    this.dateByRegionSaved = fb.group({
-      region: [],
-
-      plotType: 0
-    });
+    // this.dateByRegionSaved = fb.group({
+    //   region: [],
+    //   ndoRange: [],
+    //   plotType: 0
+    // });
 
   }
+
+
+  public setScreen(idx: number) {
+
+    console.log('setScreen ', idx, ' dragGrouping ', this.dataService.dashboardFacade.dragGrouping[idx]);
+
+
+    this.plotListLeft = this.dataService.dashboardFacade.dragGrouping[idx].plotTypeOptions;
+    console.log('this.plotListLeft ', this.plotListLeft)
+    this.dataService.dashboardFacade.selectedScreen = idx;
+    this.dataService.dashboardFacade.screenSelectedSubject$.next(idx)
+    // this.dataService.dashboardFacade.dragGrouping[idx];
+  }
+
 
   public collapseQueryItems() {
     this.collapsedInputState = !this.collapsedInputState;
@@ -92,7 +110,7 @@ export class SetQueryComponent implements OnInit {
       this.queryObj = {
         regions: getStorageValues[0],
         plotType: getStorageValues[1],
-        ndoList: getStorageValues[2]
+        ndoList: []
       }
     } else {
 
@@ -102,13 +120,12 @@ export class SetQueryComponent implements OnInit {
         ndoList: []
       }
     }
-    //console.log('plotListLeft ', this.plotListLeft, '\ndepartureDateOptions ', this.departureDateOptions, '\nnDoDropdownSettings ', this.nDoDropdownSettings)
-    //console.log('this.queryObj ', this.queryObj, ' selectedPlotType ', this.selectedPlotType)
+    // console.log('plotListLeft ', this.plotListLeft)
+    // console.log('this.queryObj ', this.queryObj)
 
     this.dataService.dashboardFacade.sendQueryItems(this.queryObj);
 
 
-    this.dataService.dashboardFacade.setplotTypes(this.plotListLeft)
     // this.dataService.dashboardFacade.getplotType()
     //   .subscribe(types => {
     //     console.log('\n\n types ', types)
@@ -119,9 +136,10 @@ export class SetQueryComponent implements OnInit {
 
     this.dataService.dashboardFacade.getRegionDestinationList()
       .subscribe((response: any[]) => {
-        //console.log('response ', response)
+        // console.log('response ', response)
         this.regionSpecificDestinations = response;
-        this.ndoRangeOptions = ndoDaysOut
+        this.ndoRangeOptions = [];
+
       })
   }
 
@@ -129,19 +147,19 @@ export class SetQueryComponent implements OnInit {
   // Sets initial form state
   private setFormValues() {
 
-    //console.log('[plotListLeftOptions[this.queryObj.plotType].name] XXXXXXXXXXXXXX ', ' plotType ', this.queryObj.plotType, ' plotListLeftOptions ', this.plotListLeft[this.queryObj.plotType])
+    // console.log('[plotListLeftOptions[this.queryObj.plotType].name] XXXXXXXXXXXXXX ', ' plotType ', this.queryObj.plotType, ' plotListLeftOptions ', this.plotListLeft[this.queryObj.plotType])
 
     this.dateByRegionOptions.setValue({
       region: this.queryObj.regions,
       plotType: [plotListLeftOptions[this.queryObj.plotType]],
-
+      ndoRange: []
     });
 
     //console.log(' XXXXXXXXXXXXXX ', ' plotType ', this.queryObj.plotType, ' plotListLeftOptions ', this.plotListLeft[this.queryObj.plotType])
 
-    if (this.dateByRegionSaved.value.region === null) {
-      this.dateByRegionSaved = cloneDeep(this.dateByRegionOptions);
-    }
+    // if (this.dateByRegionSaved.value.region === null) {
+    //   this.dateByRegionSaved = cloneDeep(this.dateByRegionOptions);
+    // }
   }
 
 
@@ -149,12 +167,11 @@ export class SetQueryComponent implements OnInit {
   public onChanges() {
 
     this.dateByRegionOptions.valueChanges.subscribe(val => {
-      console.log('dateByRegionOptions ', val)
+
       if (this.dateByRegionOptions.value !== undefined) {
 
         this.queryObj.regions = val.region;
-        // this.queryObj.ndoList = val.ndoRange;
-        //this.selectedDestinations = val.destination;
+        this.queryObj.ndoList = [];
         //console.log('dateByRegionOptions ', this.queryObj)
       }
     });
@@ -162,16 +179,16 @@ export class SetQueryComponent implements OnInit {
 
   // Called from Save button
   public saveSelections() {
-    console.log('saveSelections this.queryObj ', this.queryObj.plotType)
+    //console.log('saveSelections this.queryObj ', this.queryObj.plotType)
 
     this.dateByRegionOptions.setValue({
-      //destination: this.selectedDestinations,
       region: this.queryObj.regions,
       plotType: [plotListLeftOptions[this.queryObj.plotType]],
-      //ndoRange: this.queryObj.ndoList
+      ndoRange: []
     });
 
-    this.dateByRegionSaved = cloneDeep(this.dateByRegionOptions);
+    //this.dateByRegionSaved = cloneDeep(this.dateByRegionOptions);
+
     setTimeout(() => {
 
       localStorage.setItem('chartValues', JSON.stringify(Array.from([this.queryObj.regions, this.queryObj.plotType, this.queryObj.ndoList])));
@@ -181,14 +198,14 @@ export class SetQueryComponent implements OnInit {
   }
 
   // NON- destructive return form values to saved versions and close
-  public cancelEditMode() {
-    this.dateByRegionOptions.setValue({
-      region: this.dateByRegionSaved.value.region,
-      //destination: this.dateByRegionSaved.value.destination,
-      plotType: this.dateByRegionSaved.value.plotType,
-      //ndoRange: this.dateByRegionSaved.value.ndoRange
-    });
-  }
+  // public cancelEditMode() {
+  //   this.dateByRegionOptions.setValue({
+  //     region: this.dateByRegionSaved.value.region,
+  //     plotType: this.dateByRegionSaved.value.plotType,
+  //     ndoRange: []
+  //   });
+  // }
+
 
   // From select drop down
   public onPlotTypeSelect(ev: any) {
@@ -199,20 +216,16 @@ export class SetQueryComponent implements OnInit {
     this.selectedPlotType = idx;
   }
 
-  //public onNdoSelect(ev: any) { }
 
-  //public onNdoDeSelect(ev: any) { }
+  public onNdoSelect(ev: any) { }
+
+  public onNdoDeSelect(ev: any) { }
 
   public onRegionDeSelect(item: any) {
-
   }
 
 
   public onRegionSelect(item: any) {
-    //console.log('onRegionSelect ', item)
-
-    // this.regionList.push(item)
-    // console.log('this.regionList ', this.regionList)
   }
 
   public closeSelected(idx: any) {

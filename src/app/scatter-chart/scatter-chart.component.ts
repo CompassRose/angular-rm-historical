@@ -1,10 +1,6 @@
-import { Component, OnDestroy, ElementRef } from '@angular/core';
-
+import { Component, Input, OnDestroy, ElementRef } from '@angular/core';
 import { DashboardFacade } from '../dashboard.facade';
 import { QueryItems } from '../models/dashboard.model';
-
-
-
 import * as echarts from 'echarts';
 
 
@@ -41,6 +37,9 @@ export class ScatterChartComponent implements OnDestroy {
   public resizeCheck = false;
   public refreshChartValues = false;
 
+  public categorizedValues: any;
+  public clusteredValues: any;
+
   //---------------
   //Cat data
   // Departure,
@@ -76,14 +75,42 @@ export class ScatterChartComponent implements OnDestroy {
   // cluster_Geo:"1"
   // cluster_Slope:"5"
 
+
+  @Input()
+  set whichMetricState(index: any) {
+    console.log('SCATTER  whichMetricState ', index)
+    if (index === 0) {
+      setTimeout(() => {
+        this.sendForChartValues(this.selectedRegion, this.plotType, this.NdoRange);
+      }, 500);
+
+    } else {
+      this.destroyChartElements()
+    }
+
+  }
+
+
+  // General idea: 
+  //   even tool that Farukh has already build, involves displaying general market analysis:
+
+  //         Two dimensional axis scatter chart with axes as:
+
+  //            KPIs: LoadFactor, AvgFare, RASM, RpS, Slope
+
+  //            and Color as the cluster(cluster_Geo, cluster_Slope, cluster_Dist)
+
+  //   + second part of the visualization might be possible map(using Geo coordinates
+
+
   constructor(private host: ElementRef,
     private dashboardFacade: DashboardFacade) {
 
 
-    const test = [];
-    this.dashboardFacade.getClusteredData()
-      .subscribe((response) => {
-        console.log('Market Analysis Values  ', response)
+    this.dashboardFacade.screenSelectedSubject$
+      .subscribe((response: number) => {
+        //console.log('||||||||||||||||||||  response ', response)
+
       })
 
     this.dashboardFacade.getQueryItems()
@@ -91,11 +118,12 @@ export class ScatterChartComponent implements OnDestroy {
 
         if (response) {
 
-          //console.log('Scatter this.selectedRegion ', response)
+          // console.log('Scatter this.selectedRegion ', response)
           this.selectedRegion = response.regions;
           this.plotType = response.plotType;
           this.NdoRange = response.ndoList;
-          //  console.log('Scatter this.selectedRegion ', this.selectedRegion)
+          // console.log('Scatter this.selectedRegion ', this.selectedRegion)
+
           if (this.myChart) {
             this.dashboardFacade.setBrushSelectedFlights([]);
             setTimeout(() => {
@@ -103,19 +131,20 @@ export class ScatterChartComponent implements OnDestroy {
             }, 0);
           }
           this.getReferenceValues();
-          this.sendForChartValues(this.selectedRegion, this.plotType, this.NdoRange);
+          // this.sendForChartValues(this.selectedRegion, this.plotType, this.NdoRange);
         }
 
       })
   }
 
   ngOnDestroy(): void {
-    this.scatterObserver.unobserve(this.targetElement);
+    // console.log('ngOnDestroy ngOnDestroy ngOnDestroy')
+    //this.scatterObserver.unobserve(this.targetElement);
   }
 
 
   public onChartInit(e: any) {
-
+    console.log('onChartInit ', e)
     this.targetElement = this.host.nativeElement.querySelector('#scatter-chart');
     // @ts-ignore
     this.scatterObserver = new ResizeObserver(entries => {
@@ -129,22 +158,23 @@ export class ScatterChartComponent implements OnDestroy {
 
   // Sets titles and axis text <wip>
   private getReferenceValues() {
+    // console.log('this.metricSpecificValues ', this.metricSpecificValues)
     this.referenceName = this.metricSpecificValues[this.metricSpecificValues.findIndex(val => {
+
       return val.id === this.plotType
     })];
   }
 
 
   public sendForChartValues(regions: any[], plot: number, ndoDayRange: any[]) {
+    //console.log('sendForChartValues ', regions)
     if (regions !== undefined) {
+
       this.initChartElements();
-      this.ndoRangeStr = '';
-      if (ndoDayRange.length > 0) {
-        this.ndoRangeStr = `NDO Range: ${ndoDayRange.map(range => `${range.item_text}`).join(', ')}`;
-      }
 
       this.dashboardFacade.getCategoryValues(regions, plot, ndoDayRange)
         .subscribe((message: any[]) => {
+
           this.data = message;
           if (this.data.length > 0) {
             let values: number[] = [];
@@ -159,6 +189,14 @@ export class ScatterChartComponent implements OnDestroy {
     }
   }
 
+  public destroyChartElements() {
+    if (this.myChart !== null) {
+      this.myChart = null;
+    }
+    if (echarts.init(document.getElementById('scatter-chart'))) {
+      echarts.init(document.getElementById('scatter-chart')).dispose();
+    }
+  }
 
   // Sets up Node structure
   initChartElements() {
@@ -230,7 +268,7 @@ export class ScatterChartComponent implements OnDestroy {
       this.resizeCheck = false;
     });
 
-    this.myChart.one('finished', () => {
+    this.myChart.on('finished', () => {
       setTimeout(() => {
         console.log('*****  Finished Drawing Scatter Chart')
       }, 0);

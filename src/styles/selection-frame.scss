@@ -1,1 +1,75 @@
-@import "src/styles/configuration";
+@import "./configuration.scss";
+// @import 'src/styles/flexbox';
+
+.selector-frame {
+    background-color: white;
+    height: 100%;
+    .category-frame {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        // @include flexbox();
+        // @include flex-direction(column);
+
+        .widget {
+            width: 100% !important;
+            background-color: #eee;
+            display: flex;
+            //   @include flexbox();
+            border: 1px solid rgb(110, 109, 109);
+        }
+
+        .widget-header {
+            background-color: $brand-primary-background;
+            min-width: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            //   @include flexbox();
+            //   @include justify-content(center);
+            //   @include align-items(center);
+            //   @include flex-grow(0);
+            //   @include flex-shrink(0);
+            //   @include flex-basis(30px);
+        }
+
+        .widget-header > span {
+            color: #fff;
+            font-size: 13px;
+            transform: rotate(-90deg);
+            white-space: nowrap;
+        }
+
+        .widget-content {
+            border: 1px solid $brand-primary-background-50;
+            width: 100%;
+            flex: 1;
+        }
+
+        .second {
+            top: 20px !important;
+            margin: 10px;
+            background-color: rgb(247, 247, 247);
+
+            .column-hover {
+                cursor: pointer;
+                margin-bottom: 5px;
+
+                .widget-frame {
+                    border: 1px solid $brand-primary-background;
+                    background-color: #dddddd;
+                    padding: 10px;
+
+                    &.b-left {
+                        background-color: #b6b6b6;
+                        border-left: 1px solid rgb(194, 194, 194);
+                    }
+
+                    &:hover {
+                        border: 1px solid rgb(104, 104, 104);
+                    }
+                }
+            }
+        }
+    }
+}

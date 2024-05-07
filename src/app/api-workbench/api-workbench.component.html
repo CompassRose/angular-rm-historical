@@ -1,0 +1,155 @@
+<div class="mcf-flex-box mcf-flex-nowrap top-xs darkbg col-xs-12">
+
+  <div [style.width.%]='35'
+    [ngClass]="toggleJsVisible ? 'script-editors ml-8' : 'script-editors-none ml-8'">
+    <div class="mcf-flex-box mcf-flex-nowrap middle-xs start-xs">
+      <button mcfButton
+        class="mcf__btn -state-primary -small my-8 mr-8"
+        title="Save Script to List"
+        (click)="saveScript()">
+        <i class="acf_icon_Save icon-btn"></i>
+      </button>
+      <mcf-input [style.width.%]='35'
+        class="mr-8"
+        maxlength="9"
+        [placeholder]="'Enter Script Name'"
+        (onChange)="myInputOnChange($event)"
+        [id]="'BindingInput'"
+        [value]="newScriptName"
+        [clear]="false">
+      </mcf-input>
+      <ng-container *ngIf="scriptSourceCollection.length > 0">
+        <mcf-select mcfClass="script-select-dropdown mr-16"
+          [style.width.%]='40'
+          [items]="jsonContentBehaviorSubject$ | async"
+          [ngModel]="selectedScript$ | async"
+          [required]="false"
+          [clearable]="false"
+          [bindLabel]="'name'"
+          bindValue="id"
+          [dropDownWidthByContent]="false"
+          (change)="onScriptSelectChange($event)">
+          <ng-template ng-option-tmp
+            let-item="item">
+            <div class="mcf-flex-box mcf-flex-nowrap middle-xs between-sm">
+              <a class="isoBtn"
+                [style.font-size.px]="item.default  ? '22' : '20'"
+                title="Set Default Script"
+                (click)="setDefaultItem(item)"><i
+                  [ngClass]="item.default  ? 'acf_icon_checkbox' : 'acf_icon_checkbox_blank'"></i></a>
+              <div class="selectable-script">{{item.name}}</div>
+              <a class="isoBtn"
+                title="Removes Script from List"
+                (click)="removeScriptItem(item)"><i class="acf_icon_close_3 icon-btn"></i></a>
+            </div>
+          </ng-template>
+        </mcf-select>
+      </ng-container>
+    </div>
+    <div class="top-sm w-100">
+      <ngx-codemirror id="api-workbench-editors"
+        [(ngModel)]="jsonContent"
+        [options]="{
+            theme: 'material',
+            autoRefresh: true,
+            autoclosetag: true,
+            mode: {name: 'javascript', json: true},
+            extensions: jsonExtensions,
+            lineWrapping: true
+          }"
+        class="jsonEditor"></ngx-codemirror>
+    </div>
+    <div class="mcf-flex-box mcf-flex-nowrap middle-xs">
+      <button mcfButton
+        class="mcf__btn -small my-8 mr-8 w-25"
+        (click)="doRun()">Run Query</button>
+      <mcf-select mcfClass="script-select-dropdown mr-8"
+        [items]="displayType"
+        [ngModel]="displayMetric$ | async"
+        [required]="false"
+        [clearable]="false"
+        [datatype]="'alpha'"
+        [bindLabel]="'value'"
+        [bindValue]="'id'"
+        (change)="onChartTypeChange($event)">
+        <ng-template ng-option-tmp
+          let-item="item">
+          <div class="mcf-flex-box">
+            <div style="width: 15%">
+              <div>{{item.value}}</div>
+            </div>
+          </div>
+        </ng-template>
+      </mcf-select>
+
+    </div>
+    <ngx-codemirror [ngModel]="(displayMetric$ | async)?.metric"
+      [options]=" {
+                  lineNumbers: true,
+                  lineWrapping: true,
+                  theme: 'material',
+                  autoRefresh: true,
+                  autoclosetag: true,
+                  mode: 'javascript',
+                  foldGutter: true,
+                  extensions: jsonExtensions
+                }"
+      class="javascriptEditor"></ngx-codemirror>
+  </div>
+  <div id="api-workbench-output"
+    [style.min-width.%]='65'
+    class="mcf-flex-box mcf-flex-nowrap top-xs">
+    <div class="spinner-placement"
+      *ngIf="loadingSubject$ | async">
+      <div class="spinner-border"
+        role="status">
+        <span class="sr-only"
+          id="loading"></span>
+      </div>
+    </div>
+    <a class="collapse-js-button"
+      title="Edit API Query"
+      [ngClass]="!toggleJsVisible ? 'acf_icon_right_2' : 'acf_icon_left_2'"
+      (click)="toggleJsVisible = !toggleJsVisible"></a>
+    <div [style.display]="(displayMetric$ | async)?.id === 0  ? 'block' : 'none'">
+      <div #userScriptOutput></div>
+      <mcf-responsive-datatable id="datatableEllipsisMenu"
+        *ngIf="datatableRows.length > 0"
+        #responsiveDatatable
+        [searchEnabled]="true"
+        [selectOnClick]="true"
+        searchPlaceholder="Search..."
+        [searchstringminlength]="1"
+        [data]="datatableRows"
+        [columns]="columnsTable"
+        [paginationEnabled]="true"
+        [enableCheckbox]="true"
+        [showHeaderActions]="true"
+        [pageSizes]="'38'"
+        [fieldsToDownload]="fieldsToDownload">
+      </mcf-responsive-datatable>
+      <ng-template #readOnlyTemplate
+        let-row="row"
+        let-column="column">
+        {{ row[column.field] }}
+      </ng-template>
+      <div #userScriptSource
+        style.display="block">
+        <ng-content></ng-content>
+      </div>
+    </div>
+    <div [style.display]="(displayMetric$ | async)?.id >= 3 ? 'block' : 'none'"
+      echarts
+      class="echart-container"
+      id="chartAll">
+    </div>
+    <div [style.display]="(displayMetric$ | async)?.id === 1 || (displayMetric$ | async)?.id === 2 ? 'block' : 'none'"
+      echarts
+      class="echart-container"
+      id="chart1"></div>
+    <div [style.display]="(displayMetric$ | async)?.id === 2 ? 'block' : 'none'"
+      echarts
+      class="echart-container"
+      id="chart2"></div>
+  </div>
+</div>

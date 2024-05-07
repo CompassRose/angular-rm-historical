@@ -20,7 +20,7 @@
     </div>
 
     <div class="plottype-space"
-       *ngIf="(this.dataService.dashboardFacade.getplotType() | async)">
+       *ngIf="(dataService.dashboardFacade.getplotType() | async)">
       <div class="font-14 ms-3 me-2 text-off-white">Plot Type:</div>
 
       <ng-multiselect-dropdown formControlName="plotType"
@@ -35,15 +35,30 @@
         Loading...
       </ng-template>
     </div>
+
+    <button class="btn btn-primary-light ms-4"
+       (click)="saveSelections()">Save</button>
+    <!-- <button title="Resets values to last saved"
+                     class="btn btn-primary-light"
+                     (click)="cancelEditMode()">Reset</button> -->
     <div class="button-space me-4">
 
-
-
-      <button class="btn btn-primary-light me-2"
-         (click)="saveSelections()">Save</button>
-      <button title="Resets values to last saved"
-         class="btn btn-primary-light"
-         (click)="cancelEditMode()">Reset</button>
+      <div class="d-flex align-items-center ms-auto"
+         *ngIf="(dataService.dashboardFacade.screenGroupSubject$ | async)?.length > 1">
+        <div class="d-flex align-items-center me-2"
+           *ngFor="let item of (dataService.dashboardFacade.screenGroupSubject$ | async) let $idx = index;">
+          <input type="radio"
+             id="{{$idx}}"
+             name="select"
+             [disabled]="item.disabled ? true : false"
+             value="$idx"
+             [checked]="item.id === dataService.dashboardFacade.selectedScreen"
+             (change)="setScreen($idx)" />
+          <label for="{{item.id}}">
+            <div class="noselect multiple font-12 px-1">{{item.name}}</div>
+          </label>
+        </div>
+      </div>
     </div>
   </div>
 </form>

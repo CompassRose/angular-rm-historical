@@ -27,13 +27,14 @@ export const scatterRightAxisOptions: any[] = [
 export const plotListLeftOptions = [
     "Load Factor",
     "Standardized",
-    "Average Fare",
-    "RASM",
-    "Slope",
-    "RpS"
-
 ]
 
+export const marketAnalysisOptions = [
+    "RpS",
+    "RASM",
+    "Slope",
+    "Average Fare"
+]
 
 export const departureDateOptions: string[] = [
     '21-01-11 - 21-01-15 M-F',

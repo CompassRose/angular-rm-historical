@@ -4,8 +4,9 @@ import { DashboardApi } from './api/dashboard.api';
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { SeasonalItems, HistoryData, QueryMap, QueryItems, ODLocate, TableValues, ColumnValues, InventoryValues } from './models/dashboard.model';
-
+import { plotListLeftOptions, marketAnalysisOptions } from './dashboard-constants';
 import { BehaviorSubject, Subject } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root'
@@ -13,7 +14,18 @@ import { BehaviorSubject, Subject } from 'rxjs';
 
 export class DashboardFacade {
 
+  public dragGrouping: any = [
+    { name: 'Data Categorization', id: 0, active: false, disabled: false, plotTypeOptions: plotListLeftOptions },
+    { name: 'Metric Comparison', id: 1, active: false, disabled: false, plotTypeOptions: marketAnalysisOptions }
+  ];
+
+  public selectedScreen = 0;
+
   public worldCoordinatesBehaviorSubject$ = new Subject<any>();
+
+  public screenGroupSubject$ = new BehaviorSubject<any>([]);
+
+  public screenSelectedSubject$ = new BehaviorSubject<number>(0);
 
   constructor(
     private dashboardAPI: DashboardApi,
@@ -33,7 +45,7 @@ export class DashboardFacade {
 
   // From Set Query panel
   public sendQueryItems(items: QueryItems) {
-    // console.log('sendQueryItems ', items)
+    //console.log('sendQueryItems ', items)
     this.dashboardState.setQueryList(items)
   }
 
@@ -73,6 +85,7 @@ export class DashboardFacade {
     this.dashboardAPI
       .getMonthlyAvailableData(metric)
       .subscribe((response: any[]) => {
+        console.log('response ', response)
         return this.dashboardState.setMonthlyAvailabilityData(response);
       });
   }
@@ -82,7 +95,7 @@ export class DashboardFacade {
       .getCompetitiveFareData()
       .subscribe((response: any[]) => {
 
-        return this.dashboardState.setCompetitiveFareData(response);
+        this.dashboardState.setCompetitiveFareData(response);
       });
   }
 
@@ -127,7 +140,22 @@ export class DashboardFacade {
   }
 
 
+
   loadTableApiData() {
+    this.dashboardAPI
+      .queryTableApi()
+      .subscribe(
+        (response: any) => {
+          this.dashboardState.setTableApiValues(response);
+        },
+        (error: HttpErrorResponse) => { // Use HttpErrorResponse for the error
+          console.error('Error:', error);
+          // Handle the error here
+        }
+      );
+  }
+
+  loadTableApiDataOut() {
     this.dashboardAPI
       .queryTableApi()
       .subscribe((response: any) => {
@@ -135,21 +163,22 @@ export class DashboardFacade {
       });
   }
 
-  // loadColumnsApiData(payload: any) {
-  //   this.dashboardAPI
-  //     .queryTableColumnsApi(payload)
-  //     .subscribe((response: any) => {
-  //       this.dashboardState.setTableColumnApiValues(response);
-  //     });
-  // }
+  loadColumnsApiData(payload: any) {
+    this.dashboardAPI
+      .queryTableColumnsApi(payload)
+      .subscribe((response: any) => {
+        this.dashboardState.setTableColumnApiValues(response);
+      });
+  }
 
   getTableApiData(): Observable<TableValues[]> {
+    console.log('getTableApi Data getTable ApiData getTableAp iData')
     return this.dashboardState.getTableApiValues();
   }
 
-  // getTableColumnApiData(): Observable<QueryMap> {
-  //   return this.dashboardState.getTablColumnApiValues();
-  // }
+  getTableColumnApiData(): Observable<QueryMap> {
+    return this.dashboardState.getTablColumnApiValues();
+  }
 
 
   getAnalyticApiData(): Observable<any> {
@@ -174,7 +203,7 @@ export class DashboardFacade {
       .getKPI_CategorizationData();
 
     res.subscribe((response: any[]) => {
-      // console.log('getKPI_CategorizationData response ', response)
+      //console.log('getKPI_CategorizationData response ', response)
       return this.dashboardState.setCategorizedValues(response);
     });
 
@@ -186,6 +215,7 @@ export class DashboardFacade {
     const res = this.dashboardAPI
       .callApiQuery(args)
     res.subscribe((response: ColumnValues) => {
+      console.log('loadColumns response ', response)
       return this.dashboardState.setColumnValues(response);
     })
     return res;
@@ -196,6 +226,7 @@ export class DashboardFacade {
     const res = this.dashboardAPI
       .getInventory()
     res.subscribe((response: InventoryValues) => {
+      console.log('loadInventory response ', response)
       return this.dashboardState.setInventoryValues(response);
     });
     return res;
@@ -229,6 +260,7 @@ export class DashboardFacade {
 
   // Flight Categorizion Values from local JSON
   getCategoryValues(regions: string[], plot: any, ndoRange: any): Observable<any> {
+    // console.log('XXXXXXXXXX    getCategoryValues  ', regions)
     return this.dashboardState.getCategorizedValues(regions, plot, ndoRange);
   }
 

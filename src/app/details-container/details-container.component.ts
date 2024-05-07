@@ -158,7 +158,7 @@ export class DetailsComponent implements OnChanges, AfterViewInit, OnDestroy {
   ngOnChanges(changes: { [propName: string]: SimpleChange }): void {
     //@ts-ignore
     this.plotType = changes.plotTypeSelectInput.currentValue;
-    console.log('changes ', changes)
+    // console.log('changes ', changes)
   }
 
 
@@ -229,7 +229,7 @@ export class DetailsComponent implements OnChanges, AfterViewInit, OnDestroy {
           name: `${strConcat}`, value: (d[1] - 1)
         })
       });
-      console.log('initializeChartValues ', this.chartDataCollection)
+      // console.log('initializeChartValues ', this.chartDataCollection)
 
       setTimeout(() => {
         this.setPieChart();

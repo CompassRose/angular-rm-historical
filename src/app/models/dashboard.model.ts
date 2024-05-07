@@ -10,7 +10,7 @@ export interface SeasonalItems {
 export interface QueryItems {
   regions: string[];
   plotType: number;
-  ndoList: any[];
+  ndoList?: any[];
 }
 
 export interface ChartDisplayType {

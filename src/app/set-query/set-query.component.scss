@@ -1,16 +1,20 @@
 .category-frame {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
+  justify-content: space-between;
   min-width: 100% !important;
 
   .region-space {
     display: flex;
+    // min-width: 35%;
     align-items: center;
     white-space: nowrap;
   }
 
   .plottype-space {
     display: flex;
+    //min-width: 20%;
     align-items: center;
     white-space: nowrap;
   }
@@ -20,6 +24,49 @@
     align-items: center;
     margin-left: auto !important;
   }
+}
+
+:host ::ng-deep .multiselect-dropdown .dropdown-btn .selected-item-container .selected-item {
+  border: 1px solid rgba(192, 191, 191, 0.3) !important;
+  margin-right: 4px;
+  margin-bottom: 4px;
+  background: transparent !important;
+  padding: 0 7px 0 5px !important;
+  color: #fff;
+  border-radius: 2px;
+  float: left;
+}
+
+:host ::ng-deep .region-space .multiselect-dropdown .dropdown-btn {
+  display: inline-block;
+  border: 1px solid rgb(237, 237, 255) !important;
+  min-width: 330px !important;
+  padding: 0px 12px !important;
+  margin-bottom: 0;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.52857143;
+  text-align: left;
+  vertical-align: middle;
+  cursor: pointer;
+  background-image: none;
+  border-radius: 4px;
+}
+
+:host ::ng-deep .plottype-space .multiselect-dropdown .dropdown-btn {
+  display: inline-block;
+  border: 1px solid #f5f4f4;
+  min-width: 150px !important;
+  padding: 0px 12px !important;
+  margin-bottom: 0;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.52857143;
+  text-align: left;
+  vertical-align: middle;
+  cursor: pointer;
+  background-image: none;
+  border-radius: 2px;
 }
 
 :host ::ng-deep .multiselect-dropdown .dropdown-btn .dropdown-multiselect__caret {
@@ -48,7 +95,7 @@
 
 :host ::ng-deep .multiselect-dropdown .dropdown-btn {
   display: inline-block;
-  border: 1px solid #adadad;
+  border: 1px solid #e2e2e2 !important;
   padding: 6px 12px;
   margin-bottom: 0;
   font-weight: 400;
@@ -67,22 +114,6 @@
   text-align: left;
 }
 
-:host ::ng-deep .multiselect-dropdown .dropdown-btn {
-  display: inline-block;
-  border: 1px solid #adadad;
-  width: 100%;
-  padding: 2px 12px !important;
-  margin-bottom: 0;
-  font-size: 13px;
-  font-weight: 400;
-  line-height: 1.52857143;
-  text-align: left;
-  vertical-align: middle;
-  cursor: pointer;
-  background-image: none;
-  border-radius: 4px;
-}
-
 :host ::ng-deep .multiselect-dropdown .dropdown-btn:last-child {
   margin-right: 20px !important;
 }
@@ -91,4 +122,71 @@
   font-size: 11px !important;
   margin-top: 0.25rem !important;
   padding-top: 0.1rem !important;
+}
+// Toggle button version in AU Visualization chart
+input[type="radio"] {
+  display: none;
+
+  &:not(:disabled) ~ label {
+    cursor: pointer;
+    padding: 0.16rem 0 !important;
+    width: 125px !important;
+  }
+
+  &:disabled ~ label {
+    color: hsla(150, 5%, 75%, 1);
+    border-color: hsla(150, 5%, 75%, 1);
+    background: gray;
+    width: 125px !important;
+    padding: 0.16rem 0 !important;
+    box-shadow: none;
+    cursor: not-allowed;
+  }
+}
+
+input[type="radio"]:not(:checked) ~ label {
+  color: white;
+}
+
+input[type="radio"]:checked + label {
+  background: #0d6efd;
+  width: 125px !important;
+  padding: 0.16rem 0 !important;
+  color: hsla(215, 0%, 100%, 1);
+}
+
+label {
+  display: block;
+  background: var(--accelya-primary-blue);
+  border: 1px solid hsla(150, 75%, 50%, 0.5);
+  border-radius: 3px;
+  width: 145px;
+  padding: 0.2rem 0;
+  text-align: center;
+  font-size: 11px;
+  position: relative;
+
+  &:disabled {
+    padding: 0rem 0;
+  }
+
+  &.red {
+    background: red;
+  }
+
+  &.blue {
+    background: #0d6efd;
+  }
+
+  &.gray {
+    background: gray;
+  }
+
+  &.dark-blue {
+    background: var(--accelya-primary-blue);
+  }
+
+  &:hover {
+    border: 1px solid hsla(150, 75%, 50%, 1);
+  }
 }
