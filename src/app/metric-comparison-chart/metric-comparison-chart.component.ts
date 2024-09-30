@@ -1,621 +1,745 @@
-import { Component, OnChanges, Input, OnDestroy, ElementRef, OnInit, AfterViewInit, SimpleChange } from '@angular/core';
+import {
+  Component,
+  OnChanges,
+  Input,
+  OnDestroy,
+  ElementRef,
+  OnInit,
+  AfterViewInit,
+  SimpleChange,
+  HostListener,
+} from '@angular/core';
 
 //import { DashboardFacade } from '../../dashboard.facade';
-import { LineChartObject, SeasonalItems, HistoryData, ColumnValues, ODLocate, QueryItems, QueryMap, TableValues, InventoryValues } from '../models/dashboard.model';
-import { BehaviorSubject, Subject, Observable, debounceTime, distinctUntilChanged, tap, map } from 'rxjs';
+import { LineChartObject, HistoryData } from '../models/dashboard.model';
+import { Subject, Observable, map, BehaviorSubject } from 'rxjs';
 import * as moment from 'moment';
 import * as echarts from 'echarts';
 
-import { arrowUpPath, lockSymbol, unlockSymbol, activeState } from '../dashboard-constants';
+import {
+  arrowUpPath,
+  lockSymbol,
+  unlockSymbol,
+  activeState,
+} from '../dashboard-constants';
 import { DashboardFacade } from '../dashboard.facade';
 import { MetricMapper } from '../services/flight-history-mapper';
-import { DataService } from '../config-data-service';
+import { MetricDataService } from '../services/metric-comparison.service';
+import 'echarts/theme/dark.js';
 
 export interface MetricHeader {
-    name: string;
-    type: string;
-    symbol: string;
-    yAxisIndex: number;
+  name: string;
+  type: string;
+  symbol: string;
+  yAxisIndex: number;
 }
 
 export interface MetricCollectionItem {
-    value: [number, number][];
+  value: [number, number][];
 }
 
 const flightDataMapper = new MetricMapper();
 
 @Component({
-    selector: 'metric-comparison',
-    templateUrl: './metric-comparison-chart.component.html',
-    styleUrls: ['./metric-comparison-chart.component.scss'],
+  selector: 'metric-comparison',
+  templateUrl: './metric-comparison-chart.component.html',
+  styleUrls: ['./metric-comparison-chart.component.scss'],
 })
+export class MetricComparisonComponent
+  implements AfterViewInit, OnInit, OnChanges, OnDestroy
+{
+  public targetElement: any;
+  public widthObserver: any;
 
-export class MetricComparisonComponent implements OnChanges, AfterViewInit, OnInit, OnDestroy {
+  public myChart1: any = null;
+  public myChart2: any = null;
+  public myChart3: any = null;
 
-    public targetElement: any;
-    public widthObserver: any;
+  public chartTheme = 'dark';
 
-    public myChart1: any = null;
-    public myChart2: any = null;
-    public myChart3: any = null;
+  public options: any = {};
 
-    public chartTheme = 'dark';
-    public options: any = {};
+  public axisValues: any[] = [
+    ['Fare', '€', '', ''],
+    ['Load Factor', '%', 'AVG Fare', '€'],
+    ['Load Factor', '%', 'LAF/BRG', ''],
+  ];
+  public compFareHeaders: any[] = [
+    ['FR', 'FR', 'none', 0, '€'],
+    ['EI', 'EI', 'none', 0, '€'],
+  ];
+  public progressionHeaders: any[] = [
+    ['Laf', 'LAF', 'roundRect', 1, ''],
+    ['LafPy', 'LAF PY', 'roundRect', 1, ''],
+    ['LoadFactor', 'Load Factor', 'arrowUpPath', 0, '%'],
+  ];
+  public lfFareHeaders: any[] = [
+    ['LAF', 'Load Factor', 'none', 0, '%'],
+    ['LAFPY', 'Load Factor PY', 'none', 0, '%'],
+    ['AVF_Fare', 'Avg Fare', 'none', 1, '€'],
+    ['AVF_FarePY', 'Avg Fare PY', 'none', 1, '€'],
+  ];
+  public chartTitles: string[] = [
+    'Competitors Fares',
+    'Current to Previous Year',
+    'LAF Progression',
+  ];
 
-    public axisValues: any[] = [['Fare', '€', '', ''], ['Load Factor', '%', 'AVG Fare', '€'], ['Load Factor', '%', 'LAF/BRG', '']];
-    public compFareHeaders: any[] = [['FR', 'FR', 'none', 0, '€'], ['EI', 'EI', 'none', 0, '€']];
-    public progressionHeaders: any[] = [['Laf', 'LAF', 'roundRect', 1, ''], ['LafPy', 'LAF PY', 'roundRect', 1, ''], ['LoadFactor', 'Load Factor', 'arrowUpPath', 0, '%']];
-    public lfFareHeaders: any[] = [['LAF', 'Load Factor', 'none', 0, '%'], ['LAFPY', 'Load Factor PY', 'none', 0, '%'], ['AVF_Fare', 'Avg Fare', 'none', 1, '€'], ['AVF_FarePY', 'Avg Fare PY', 'none', 1, '€']];
-    public chartTitles: string[] = ['Competitors Fares', 'Current to Previous Year', 'LAF Progression'];
+  // Full Chart data array of objects
+  public lfFareCollection: LineChartObject[] = [];
+  public compFareCollection: LineChartObject[] = [];
+  public progressionCollection: LineChartObject[] = [];
 
+  // chart connect mechanism
+  public connectCharts: boolean[] = [false, false, false];
+  public featureIcon: any[] = [unlockSymbol, unlockSymbol, unlockSymbol];
+  public dataZoomIcon: boolean[] = [true, true, true];
 
-    // Full Chart data array of objects     
-    public lfFareCollection: LineChartObject[] = [];
-    public compFareCollection: LineChartObject[] = [];
-    public progressionCollection: LineChartObject[] = [];
+  public fareClasses: string[] = [
+    '',
+    'S',
+    'Q',
+    'B',
+    'F',
+    'L',
+    'E',
+    'K',
+    'V',
+    'C',
+    'H',
+    'A',
+    'W',
+    'T',
+    'M',
+    'N',
+  ];
 
-    // chart connect mechanism
-    public connectCharts: boolean[] = [false, false, false];
-    public featureIcon: any[] = [unlockSymbol, unlockSymbol, unlockSymbol];
-    public dataZoomIcon: boolean[] = [true, true, true];
+  public ndoDateCollection: any[] = [];
+  public axisViewSelection = false;
 
-    public fareClasses: string[] = ['', 'S', 'Q', 'B', 'F', 'L', 'E', 'K', 'V', 'C', 'H', 'A', 'W', 'T', 'M', 'N'];
-    public ndoDateCollection: any[] = [];
-    public axisViewSelection = false;
+  public previousYearDataSubject$ = new Subject<HistoryData[]>();
 
-    public previousYearDataSubject$ = new Subject<HistoryData[]>();
+  @Input()
+  public themeSelectInput: string = '';
 
-    //public competitiveFareSubject$ = new Subject<any>();
+  @Input()
+  public axisViewInput = false;
 
-    @Input()
-    public themeSelectInput: string = '';
+  constructor(
+    private dashboardFacade: DashboardFacade,
+    //private host: ElementRef,
+    public metricDataService: MetricDataService
+  ) {
+    // console.log(
+    //   ' ** HISTORICAL  COMPONENT LOADING ** ',
+    //   this.metricDataService
+    // );
 
-    @Input()
-    public axisViewInput = false;
+    this.dashboardFacade.competitiveFareCollectionSubject$.subscribe(
+      (message: any[]) => {
+        // console.log(
+        //   '|||||||||||||||||||||||||||||||||||    metric-comparison  competitiveFareCollectionSubject$ ',
+        //   message
+        // );
+      }
+    );
+    const handleMouseWheel = null;
 
+    window.addEventListener('mousewheel', handleMouseWheel, { passive: true });
+  }
 
-    constructor(private dashboardFacade: DashboardFacade, private host: ElementRef, public dataService: DataService) {
-        console.log('HISTORICAL  COMPONENT LOADING ')
+  public getFormattedData(date: any) {
+    return moment.utc(date).format('MMM-D');
+  }
 
-        this.setupEventListeners();
+  public getStaticMetricData(): Observable<any[]> {
+    // console.log(
+    //   '+++++++++++++++++++++++++  getStaticMetricData ++++++++++++++++++++++++++++++++'
+    // );
+    return this.previousYearDataSubject$.pipe(
+      map((items: any[]) => {
+        //console.log('getStaticMetricData ', items);
+        return flightDataMapper.convertValuesToMetricModel(items);
+      })
+    );
+  }
 
-        for (let i = 0; i < 375; i++) {
-            const nowPlusOneDay = moment().add(i, 'days');
-            this.ndoDateCollection.push({ date: this.getFormattedData(nowPlusOneDay), ndo: i });
+  private setupEventListeners() {
+    //console.log('setupEventListeners');
+    this.dashboardFacade.progressiveCollectionSubject$.subscribe(
+      (response: any[]) => {
+        console.log('progressiveCollectionSubject$ ', response);
+        if (response.length > 0) {
+          this.progressionCollection = response[1];
+          this.lfFareCollection = response[0];
         }
-    }
+      }
+    );
 
-    public ngOnInit(): void {
-        // console.log(' ngOnInit ngOnInit ngOnInit ')
-        this.dashboardFacade.loadProgressiveData();
-        this.dashboardFacade.loadCompetitiveFareData();
-        //console.log('test ', test)
-        this.createSvg('metric-comparison');
-    }
+    this.dashboardFacade.getFlightHistory().subscribe((values: any[]) => {
+      this.dashboardFacade.progressiveCollectionSubject$.next(values);
+      this.progressionCollection = values[1];
+      this.lfFareCollection = values[0];
+    });
 
-
-    public getFormattedData(date: any) {
-        return moment.utc(date).format('MMM-D');
-    }
-
-
-    public getStaticMetricData(): Observable<any[]> {
-        return this.previousYearDataSubject$
-            .pipe(
-                map((items: any[]) => {
-                    console.log('getStaticMetricData ', items)
-                    return flightDataMapper.convertValuesToMetricModel(items);
-                }));
-    }
-
-    private setupEventListeners() {
-
-        //console.log('setupEventListeners ', flightDataMapper)
-        this.dashboardFacade.getFlightHistory()
-            .subscribe((values: any[]) => {
-                console.log('||||||||||||||||||  getStaticMetricData ', values)
-                this.progressionCollection = values[1];
-                this.lfFareCollection = values[0];
-                this.dashboardFacade.getCompetitiveFareValues()
-                    .subscribe((message: any[]) => {
-                        this.compFareCollection = message;
-                        setTimeout(() => {
-                            this.createSvg('metric-comparison');
-                        }, 0);
-                    })
-            });
-    }
-
-    public ngAfterViewInit(): void {
-        this.targetElement = this.host.nativeElement.querySelector('#metric-comparison');
-        // @ts-ignore
-        this.widthObserver = new ResizeObserver(entries => {
-            if (this.myChart1) {
-                this.refreshChartVisual();
-            }
-        });
-        this.widthObserver.observe(this.targetElement);
-    }
-
-    public ngOnDestroy(): void {
-        console.log('***************  ngOnDestroy ngOnDestroy ************************')
-        this.widthObserver.unobserve(this.targetElement);
-    }
-
-
-    ngOnChanges(changes: { [propName: string]: SimpleChange }): void {
-
-        if (changes['axisViewInput'] && !changes['axisViewInput'].firstChange) {
-            this.axisViewSelection = changes['axisViewInput'].currentValue;
-            setTimeout(() => {
-                this.createSvg('metric-comparison');
-            }, 0);
-
-        } else if (changes['themeSelectInput'] && !changes['themeSelectInput'].firstChange) {
-            this.chartTheme = changes['themeSelectInput'].currentValue;
-            setTimeout(() => {
-                this.createSvg('metric-comparison');
-            }, 0);
+    this.dashboardFacade.competitiveFareCollectionSubject$.subscribe(
+      (response: any[]) => {
+        if (response.length > 0) {
+          this.compFareCollection = response;
         }
+      }
+    );
+
+    this.dashboardFacade
+      .getCompetitiveFareValues()
+      .subscribe((message: any[]) => {
+        this.compFareCollection = message;
 
         setTimeout(() => {
-            if (this.connectCharts.includes(true)) {
-                this.cycleLockState();
-            }
+          //   console.log(
+          //     '\n\n*getCompetitiveFareValues  ******createSvg********** ',
+          //     this.compFareCollection
+          //   );
+          this.dashboardFacade.competitiveFareCollectionSubject$.next(
+            this.compFareCollection
+          );
         }, 0);
+      });
+  }
+
+  public ngOnInit(): void {
+    // console.log(
+    //   '\n\n***************  ngOnInit ngOnInit ************************'
+    // );
+    this.setupEventListeners();
+
+    //console.log('     this.progressionCollection ', this.progressionCollection);
+    //console.log('     this.lfFareCollection ', this.lfFareCollection);
+
+    for (let i = 0; i < 375; i++) {
+      const nowPlusOneDay = moment().add(i, 'days');
+      this.ndoDateCollection.push({
+        date: this.getFormattedData(nowPlusOneDay),
+        ndo: i,
+      });
     }
 
+    this.metricDataService.loadProgressiveData().subscribe((response) => {
+      this.metricDataService.progressiveDataSubject$.next(response);
+      //console.log('loadProgressiveData response ', response);
+    });
 
+    this.metricDataService.loadCompetitiveFareData().subscribe((lcf: any) => {
+      //   console.log(
+      //     '                         HERE I AMMMMMMMM    ------------------------   loadCompetitiveFareData lcf ',
+      //     lcf
+      //   );
+    });
+  }
 
-    // Turn on/off DataZoom Element
-    public onClickActiveGroupBtn(id: number, state: any) {
+  public ngAfterViewInit(): void {
+    // console.log(
+    //   '\n\n***************  ngAfterViewInit ngAfterViewInit ************************'
+    // );
+    setTimeout(() => {
+      //console.log('\n\n*******create Svg********** ', this.chartTheme)
+      this.createSvg('metric-comparison');
+    }, 100);
+    // this.targetElement = this.host.nativeElement.querySelector('#metric-comparison');
+    // // @ts-ignore
+    // this.widthObserver = new ResizeObserver(entries => {
+    //     if (this.myChart1) {
+    //         this.refreshChartVisual();
+    //     }
+    // });
+    // this.widthObserver.observe(this.targetElement);
+  }
 
-        const applicationsByState: { [key: number]: any[] } = {};
+  public ngOnDestroy(): void {
+    console.log(
+      '\n\n***************  ngOnDestroy ngOnDestroy ************************'
+    );
+    this.myChart1 = null;
+    this.myChart2 = null;
+    this.myChart3 = null;
+    //this.widthObserver.unobserve(this.targetElement);
+  }
 
-        this[`myChart${id + 1}`].setOption({
-            grid: {
-                bottom: this.dataZoomIcon[id] ? 60 : 30
+  ngOnChanges(changes: { [propName: string]: SimpleChange }): void {
+    console.log(']n]n]n changes ', changes);
+
+    //     if (changes['axisViewInput'] && !changes['axisViewInput'].firstChange) {
+    //         this.axisViewSelection = changes['axisViewInput'].currentValue;
+    //         setTimeout(() => {
+    //             this.createSvg('metric-comparison');
+    //         }, 0);
+
+    //     }
+    //     // else if (changes['themeSelectInput'] && !changes['themeSelectInput'].firstChange) {
+    this.chartTheme = changes['themeSelectInput'].currentValue;
+    //console.log(' chartTheme changes chartTheme ', this.chartTheme)
+    //     //     setTimeout(() => {
+    //     //         this.createSvg('metric-comparison');
+    //     //     }, 0);
+    //     // }
+
+    //     setTimeout(() => {
+    //         if (this.connectCharts.includes(true)) {
+    //             this.cycleLockState();
+    //         }
+    //     }, 0);
+  }
+
+  // Turn on/off DataZoom Element
+  public onClickActiveGroupBtn(id: number, state: any) {
+    const applicationsByState: { [key: number]: any[] } = {};
+
+    this[`myChart${id + 1}`].setOption({
+      grid: {
+        bottom: this.dataZoomIcon[id] ? 60 : 30,
+      },
+      toolbox: {
+        feature: {
+          myStateFeature: {
+            icon: activeState,
+            iconStyle: {
+              color: this.dataZoomIcon[id] ? 'black' : 'red',
             },
-            toolbox: {
-                feature: {
-                    myStateFeature: {
-                        icon: activeState,
-                        iconStyle: {
-                            color: this.dataZoomIcon[id] ? 'black' : 'red'
-                        },
-                    }
-                }
+          },
+        },
+      },
+      dataZoom: {
+        show: this.dataZoomIcon[id],
+      },
+    });
+  }
+
+  // From external control select (ngOnChange)
+  public cycleLockState() {
+    this.connectCharts.forEach((d, i) => {
+      this[`myChart${i + 1}`].group = d ? 'group1' : null;
+      this.updateChartConnectedState(i);
+    });
+  }
+
+  // Connect/disconnect charts from chart specific lock icon
+  public onClickSelectGroupBtn(id: any) {
+    echarts.disConnect('group1');
+
+    this.connectCharts.forEach((d, i) => {
+      this[`myChart${i + 1}`].group = d ? 'group1' : null;
+      this.featureIcon[i] = this.connectCharts[i] ? lockSymbol : unlockSymbol;
+    });
+    echarts.connect('group1');
+    this.updateChartConnectedState(id);
+  }
+
+  // Set connect state, icon, icon color
+  public updateChartConnectedState(id: any) {
+    this[`myChart${id + 1}`].setOption({
+      toolbox: {
+        feature: {
+          myLockFeature: {
+            icon: this.featureIcon[id],
+            iconStyle: {
+              color: this.connectCharts[id] ? 'red' : 'black',
             },
-            dataZoom: {
-                show: this.dataZoomIcon[id]
-            }
-        });
+          },
+        },
+      },
+    });
+  }
+
+  // Initialize Charts, connect to selector ID, initialize echarts instances
+  public createSvg(type: any) {
+    console.log(
+      '\n\n\n --------------------------  \n\n createSvg type',
+      type,
+      '\n\n ------------------------------------ ',
+      this.myChart1
+    );
+    const self = this;
+
+    // if (echarts.init(document.getElementById('metric-comparison'))) {
+    //   echarts.init(document.getElementById('metric-comparison')).dispose();
+    // }
+
+    if (this.myChart1) {
+      this.myChart1.dispose();
+    }
+    if (this.myChart2) {
+      this.myChart2.dispose();
+    }
+    if (this.myChart3) {
+      this.myChart3.dispose();
     }
 
-    // From external control select (ngOnChange)
-    public cycleLockState() {
-        this.connectCharts.forEach((d, i) => {
-            this[`myChart${i + 1}`].group = d ? 'group1' : null;
-            this.updateChartConnectedState(i);
-        });
+    const chart1: HTMLCanvasElement = document.getElementById(
+      'metric-comparison'
+    ) as HTMLCanvasElement;
+    const chart2: HTMLCanvasElement = document.getElementById(
+      'metric-comparison1'
+    ) as HTMLCanvasElement;
+    const chart3: HTMLCanvasElement = document.getElementById(
+      'metric-comparison2'
+    ) as HTMLCanvasElement;
+
+    if (!this.myChart1) {
+      this.myChart1 = echarts.init(chart1);
+    }
+    if (!this.myChart2) {
+      this.myChart2 = echarts.init(chart2);
+    }
+    if (!this.myChart3) {
+      this.myChart3 = echarts.init(chart3);
     }
 
-    // Connect/disconnect charts from chart specific lock icon
-    public onClickSelectGroupBtn(id: any) {
+    console.log(
+      '--------------------- setForecastChart -----------------------------) ',
+      this.myChart1
+    );
 
-        echarts.disConnect('group1');
+    setTimeout(() => {
+      this.setForecastChart('myChart1', 'compFare', 0);
+      this.setForecastChart('myChart2', 'lfFare', 1);
+      this.setForecastChart('myChart3', 'progression', 2);
+    }, 100);
+  }
 
-        this.connectCharts.forEach((d, i) => {
-            this[`myChart${i + 1}`].group = d ? 'group1' : null;
-            this.featureIcon[i] = this.connectCharts[i] ? lockSymbol : unlockSymbol;
-        });
-        echarts.connect('group1');
-        this.updateChartConnectedState(id);
-    }
+  // Sets up series data for all charts
+  private getProgressionData(metric: any) {
+    console.log('getProgressionData ', this[`${metric}Collection`]);
 
-    // Set connect state, icon, icon color
-    public updateChartConnectedState(id: any) {
-        this[`myChart${id + 1}`].setOption({
-            toolbox: {
-                feature: {
-                    myLockFeature: {
-                        icon: this.featureIcon[id],
-                        iconStyle: {
-                            color: this.connectCharts[id] ? 'red' : 'black'
-                        },
-                    }
-                }
-            }
-        });
-    }
+    const self = this;
+    const series: any[] = [];
+    const legendValues = this[`${metric}Headers`];
 
-    // Initialize Charts, connect to selector ID, initialize echarts instances
-    public createSvg(type: any) {
+    this[`${metric}Collection`].forEach((item: any, i: any) => {
+      console.log('item ', item);
+      let sym;
 
-        const self = this;
+      if (
+        this[`${metric}Headers`][i][2] &&
+        this[`${metric}Headers`][i][2] === 'arrowUpPath'
+      ) {
+        sym = arrowUpPath;
+      } else {
+        sym = this[`${metric}Headers`][i][2];
+      }
 
-        if (echarts.init(document.getElementById('metric-comparison') as HTMLCanvasElement)) {
-            echarts.init(document.getElementById('metric-comparison') as HTMLCanvasElement).dispose();
-        }
-        if (echarts.init(document.getElementById('metric-comparison1') as HTMLCanvasElement)) {
-            echarts.init(document.getElementById('metric-comparison1') as HTMLCanvasElement).dispose();
-        }
-        if (echarts.init(document.getElementById('metric-comparison2') as HTMLCanvasElement)) {
-            echarts.init(document.getElementById('metric-comparison2') as HTMLCanvasElement).dispose();
-        }
+      series.push({
+        name: legendValues[i][1],
+        type: 'line',
+        yAxisIndex: this[`${metric}Headers`][i][3],
+        symbol: sym,
+        lineStyle: {
+          type: legendValues[i][2],
 
-        const chart1: HTMLCanvasElement = document.getElementById('metric-comparison') as HTMLCanvasElement;
-        const chart2: HTMLCanvasElement = document.getElementById('metric-comparison1') as HTMLCanvasElement;
-        const chart3: HTMLCanvasElement = document.getElementById('metric-comparison2') as HTMLCanvasElement;
-
-        // console.log('this.chartTheme ', this.chartTheme)
-
-        this.myChart1 = echarts.init(chart1, this.chartTheme);
-        this.myChart2 = echarts.init(chart2, this.chartTheme);
-        this.myChart3 = echarts.init(chart3, this.chartTheme);
-
-        this.setForecastChart('myChart1', 'compFare', 0);
-        this.setForecastChart('myChart2', 'lfFare', 1);
-        this.setForecastChart('myChart3', 'progression', 2);
-
-    }
-
-    private getProgressionDataOld(metric: string) {
-        console.log('getProgressionData ', metric, ' fareClasses ', this.fareClasses)
-        const series: any[] = [];
-        const metricHeaders: MetricHeader[] = this[`${metric}Headers`];
-        const metricCollection: MetricCollectionItem[] = this[`${metric}Collection`];
-
-        metricCollection.forEach((item, i) => {
-            const header = metricHeaders[i];
-            const sym = header.symbol === 'arrowUpPath' ? arrowUpPath : header.symbol;
-
-            series.push({
-                name: header.name,
-                type: 'line',
-                yAxisIndex: header.yAxisIndex,
-                symbol: sym,
-                lineStyle: {
-                    type: header.type,
-                    normal: {
-                        shadowColor: 'rgba(0, 0, 0, .2)',
-                        shadowBlur: 4,
-                        shadowOffsetY: 3,
-                        shadowOffsetX: 3,
-                    },
-                },
-                symbolSize: (value: any, params: any) => item.value[params.dataIndex][1] !== 0 ? 25 : 1,
-                symbolRotate: (value: any, params: any) => item.value[params.dataIndex][1] === 1 ? 0 : 180,
-                label: {
-                    show: true,
-                    position: 'inside',
-                    textStyle: {
-                        fontSize: 12,
-                        fontWeight: 'bold'
-                    },
-                    formatter(value: any) {
-                        if (i === 1 && item.value[value.dataIndex][1] !== 0) {
-                            return this.fareClasses[item.value[value.dataIndex][1]];
-                        } else if (i === 0 && item.value[value.dataIndex][1] !== 0) {
-                            return item.value[value.dataIndex][0];
-                        } else {
-                            return '';
-                        }
-                    },
-                },
-                areaStyle: {
-                    normal: {
-                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
-                            offset: 0,
-                            color: 'rgba(0,149,202,0.1)'
-                        },
-                        {
-                            offset: 1,
-                            color: 'rgba(0,149,202,0)'
-                        }
-                        ], false),
-                        shadowColor: 'rgba(0,149,202, 0.2)',
-                        shadowBlur: 20
-                    }
-                },
-                data: item.value.map(d => d[0])
-            });
-        });
-
-        window.addEventListener('resize', this.refreshChartVisual);
-        return series;
-    }
-
-
-    // Sets up series data for all charts
-    private getProgressionData(metric: any) {
-
-        console.log('getProgressionData ', metric, ' fareClasses ', this.fareClasses)
-
-        const self = this;
-        const series: any[] = [];
-        const legendValues = this[`${metric}Headers`];
-
-        this[`${metric}Collection`].forEach((item: any, i: any) => {
-            console.log('item ', item)
-            let sym;
-
-            if (this[`${metric}Headers`][i][2] && this[`${metric}Headers`][i][2] === 'arrowUpPath') {
-                sym = arrowUpPath;
+          // color: legendValues[i][1],
+          shadowColor: 'rgba(0, 0, 0, .2)',
+          shadowBlur: 4,
+          shadowOffsetY: 3,
+          shadowOffsetX: 3,
+        },
+        symbolSize: (value: any, params: any) => {
+          if (item.value[params.dataIndex][1] !== 0) {
+            return 25;
+          } else {
+            return 1;
+          }
+        },
+        symbolRotate: (value: any, params: any) => {
+          if (item.value[params.dataIndex][1] === 1) {
+            return 0;
+          } else {
+            return 180;
+          }
+        },
+        label: {
+          show: true,
+          position: 'inside',
+          textStyle: {
+            //color: 'black',
+            fontSize: 12,
+            fontWeight: 'bold',
+          },
+          formatter(value: any) {
+            let test;
+            if (i === 1 && item.value[value.dataIndex][1] !== 0) {
+              test = self.fareClasses[item.value[value.dataIndex][1]];
+            } else if (i === 0 && item.value[value.dataIndex][1] !== 0) {
+              item.value[value.dataIndex][0];
             } else {
-                sym = this[`${metric}Headers`][i][2];
+              test = '';
             }
-
-            series.push({
-                name: legendValues[i][1],
-                type: 'line',
-                yAxisIndex: this[`${metric}Headers`][i][3],
-                symbol: sym,
-                lineStyle: {
-                    type: legendValues[i][2],
-                    normal: {
-                        // color: legendValues[i][1],
-                        shadowColor: 'rgba(0, 0, 0, .2)',
-                        shadowBlur: 4,
-                        shadowOffsetY: 3,
-                        shadowOffsetX: 3,
-                    },
-                },
-                symbolSize: (value: any, params: any) => {
-                    if (item.value[params.dataIndex][1] !== 0) {
-                        return 25;
-                    } else {
-                        return 1;
-                    }
-                },
-                symbolRotate: (value: any, params: any) => {
-                    if (item.value[params.dataIndex][1] === 1) {
-                        return 0;
-                    } else {
-                        return 180;
-                    }
-                },
-                label: {
-                    show: true,
-                    position: 'inside',
-                    textStyle: {
-                        //color: 'black',
-                        fontSize: 12,
-                        fontWeight: 'bold'
-                    },
-                    formatter(value: any) {
-                        let test
-                        if (i === 1 && item.value[value.dataIndex][1] !== 0) {
-                            test = self.fareClasses[item.value[value.dataIndex][1]];
-                        } else if (i === 0 && item.value[value.dataIndex][1] !== 0) {
-                            item.value[value.dataIndex][0];
-                        } else {
-                            test = '';
-                        }
-                        return test;
-                    },
-                },
-                areaStyle: {
-                    normal: {
-                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
-                            offset: 0,
-                            color: 'rgba(0,149,202,0.1)'
-                        },
-                        {
-                            offset: 1,
-                            color: 'rgba(0,149,202,0)'
-                        }
-                        ], false),
-                        shadowColor: 'rgba(0,149,202, 0.2)',
-                        shadowBlur: 20
-                    }
-                },
-                data: item.value.map((d: any, j: any) => {
-                    return d[0];
-                })
-            });
-        });
-
-        window.addEventListener('resize', this.refreshChartVisual);
-        return series;
-    }
-
-    public refreshChartVisual = () => {
-        this.myChart1.resize();
-        this.myChart2.resize();
-        this.myChart3.resize();
-    }
-
-
-    setForecastChart(type: any, metric: any, idx: any) {
-
-        let iconColor = '#000'
-        iconColor = this.chartTheme === 'dark' ? '#fff' : '#000';
-
-        const self = this;
-        const myChart = this[`${type}`];
-        const legendValues = this[`${metric}Headers`];
-
-        myChart.setOption({
-            title: {
-                text: this.chartTitles[idx],
-                textStyle: {
-                    fontSize: 17,
-                    fontWeight: 'normal',
-                },
-                padding: [22, 0, 20, 35],
-            },
-            grid: {
-                left: 45,
-                right: 55,
-                bottom: 70,
-                top: 60,
-                containLabel: true
-            },
-            tooltip: {
-                show: true,
-                snap: false,
-                trigger: 'axis',
-                padding: [10, 20, 10, 20],
-                backgroundColor: 'rgba(0,0,0,0.8)',
-                transitionDuration: 0,
-                extraCssText: 'width: auto; white-space: pre-wrap',
-                textStyle: {
-                    color: '#fff',
-                    fontSize: 14
-                },
-                formatter: (params: any) => {
-                    // TODO Set up this way because <br> is adding commas ??? 
-                    let line2 = '';
-                    let line3 = '';
-                    let line4 = '';
-
-                    const line1 = `${params[0].marker}  ${params[0].seriesName}:  ${Math.round(params[0].value)}${self[`${metric}Headers`][0][4]}<br>`;
-                    if (params.length > 1) {
-                        line2 = `${params[1].marker}  ${params[1].seriesName}:  ${Math.round(params[1].value)}${self[`${metric}Headers`][1][4]}<br>`;
-                    }
-                    if (params.length > 2) {
-                        line3 = `${params[2].marker}  ${params[2].seriesName}:  ${Math.round(params[2].value)}${self[`${metric}Headers`][2][4]}<br>`;
-                    }
-                    if (params.length > 3) {
-                        line4 = `${params[3].marker}  ${params[3].seriesName}:  ${Math.round(params[3].value)}${self[`${metric}Headers`][3][4]}<br>`;
-                    }
-                    return `NDO:  ${this.axisViewSelection ? this.ndoDateCollection[params[0].dataIndex].date : params[0].dataIndex}<br>${line1}${line2}${line3}${line4}`;
-                },
-                axisPointer: {
-                    type: 'line'
-                },
-            },
-            toolbox: {
-                orient: 'horizontal',
-                right: 30,
-                top: 10,
-                itemSize: 15,
-                language: 'en',
-                showTitle: true,
-                iconStyle: {
-                    normal: {
-                        borderColor: iconColor
-                    },
-                    emphasis: {
-                        textFill: '#000',
-                        textBackgroundColor: '#fff',
-                        textPadding: 5
-                    }
-                },
-                feature: {
-                    dataZoom: {
-                        yAxisIndex: false,
-                        iconStyle: {
-                            borderColor: iconColor
-                        },
-                    },
-                    myLockFeature: {
-                        show: true,
-                        id: 0,
-                        title: 'Connect Chart',
-                        icon: this.featureIcon[idx],
-                        iconStyle: {
-                            color: iconColor
-                        },
-                        onclick: () => {
-                            this.connectCharts[idx] = !this.connectCharts[idx];
-                            this.onClickSelectGroupBtn(idx);
-                        },
-                        emphasis: {
-                            iconStyle: {
-                                color: 'red'
-                            }
-                        },
-                    },
-                    myStateFeature: {
-                        show: true,
-                        id: 1,
-                        title: 'Active State',
-                        icon: activeState,
-                        iconStyle: {
-                            color: iconColor
-                        },
-                        onclick: () => {
-                            this.dataZoomIcon[idx] = !this.dataZoomIcon[idx];
-                            this.onClickActiveGroupBtn(idx, this.connectCharts[idx]);
-                        },
-                        emphasis: {
-                            iconStyle: {
-                                color: 'red'
-                            }
-                        },
-                    },
-                }
-            },
-            legend: {
-                top: 15,
-                icon: 'roundRect',
-                align: 'auto',
-                itemWidth: 18,
-                itemHeight: 5,
-                textStyle: {
-                    fontSize: 13,
-                },
-                data: legendValues.map((item: any, i: any) => {
-                    return item[1];
-                }),
-            },
-            xAxis: [
-                {
-                    type: 'category',
-                    nameGap: 30,
-                    name: 'NDO',
-                    nameLocation: 'middle',
-                    data: self.ndoDateCollection.map((item, i) => {
-                        return this.axisViewSelection ? item.date : item.ndo;
-                    })
-                },
+            return test;
+          },
+        },
+        areaStyle: {
+          color: new echarts.graphic.LinearGradient(
+            0,
+            0,
+            0,
+            1,
+            [
+              {
+                offset: 0,
+                color: 'rgba(0,149,202,0.1)',
+              },
+              {
+                offset: 1,
+                color: 'rgba(0,149,202,0)',
+              },
             ],
-            yAxis: [
-                {
-                    show: this[`${metric}Headers`][idx][3] === 0 ? true : false,
-                    type: 'value',
-                    position: 'left',
-                    nameLocation: 'middle',
-                    min: 0,
-                    nameGap: 40,
-                    max: this[`${metric}Collection`].max,
-                    name: this.axisValues[idx][0],
-                    axisLabel: {
-                        formatter: (value: any) => {
-                            return `${value}${self[`${metric}Headers`][idx][4]}`;
-                        },
-                        fontSize: 11
-                    }
-                },
-                {
-                    show: true,
-                    type: 'value',
-                    min: 0,
-                    nameGap: 40,
-                    nameLocation: 'middle',
-                    max: this[`${metric}Collection`].max,
-                    position: 'right',
-                    name: this.axisValues[idx][2],
-                    axisLabel: {
-                        formatter: function (value: any) {
-                            return `${value}${self.axisValues[idx][3]}`;
-                        },
-                        fontSize: 11
-                    }
-                }
-            ],
-            dataZoom: [{
-                show: true,
-                start: 0,
-                end: 20,
-                filterMode: 'none',
-            }, {
-                type: 'inside'
-            }],
+            false
+          ),
+          shadowColor: 'rgba(0,149,202, 0.2)',
+          shadowBlur: 20,
+        },
+        data: item.value.map((d: any, j: any) => {
+          // console.log('d ', d);
+          return d[0];
+        }),
+      });
+    });
 
-            series: this.getProgressionData(metric)
-        });
-    }
+    // window.addEventListener('resize', this.refreshChartVisual);
+    console.log('series ', series);
+    return series;
+  }
+
+  public refreshChartVisual = () => {
+    this.myChart1.resize();
+    this.myChart2.resize();
+    this.myChart3.resize();
+  };
+
+  public setForecastChart(type: any, metric: any, idx: any) {
+    // console.log(
+    //   'set ForecastChart **********  ',
+    //   type,
+    //   ' metric ',
+    //   metric,
+    //   ' idx ',
+    //   idx,
+    //   ' chartTheme ',
+    //   this.chartTheme
+    // );
+    let iconColor = '#000';
+    //iconColor = this.chartTheme === 'dark' ? '#fff' : '#000';
+
+    const self = this;
+    const myChart = this[`${type}`];
+    const legendValues = this[`${metric}Headers`];
+    console.log('legendValues*  ', legendValues);
+
+    myChart.setOption({
+      title: {
+        text: this.chartTitles[idx],
+        textStyle: {
+          fontSize: 17,
+          fontWeight: 'normal',
+        },
+        padding: [22, 0, 20, 35],
+      },
+      grid: {
+        left: 45,
+        right: 55,
+        bottom: 70,
+        top: 60,
+        containLabel: true,
+      },
+      tooltip: {
+        show: true,
+        snap: false,
+        trigger: 'axis',
+        padding: [10, 20, 10, 20],
+        backgroundColor: 'rgba(0,0,0,0.8)',
+        transitionDuration: 0,
+        extraCssText: 'width: auto; white-space: pre-wrap',
+        textStyle: {
+          color: '#fff',
+          fontSize: 14,
+        },
+        formatter: (params: any) => {
+          // TODO Set up this way because <br> is adding commas ???
+          let line2 = '';
+          let line3 = '';
+          let line4 = '';
+
+          const line1 = `${params[0].marker}  ${
+            params[0].seriesName
+          }:  ${Math.round(params[0].value)}${
+            self[`${metric}Headers`][0][4]
+          }<br>`;
+          if (params.length > 1) {
+            line2 = `${params[1].marker}  ${
+              params[1].seriesName
+            }:  ${Math.round(params[1].value)}${
+              self[`${metric}Headers`][1][4]
+            }<br>`;
+          }
+          if (params.length > 2) {
+            line3 = `${params[2].marker}  ${
+              params[2].seriesName
+            }:  ${Math.round(params[2].value)}${
+              self[`${metric}Headers`][2][4]
+            }<br>`;
+          }
+          if (params.length > 3) {
+            line4 = `${params[3].marker}  ${
+              params[3].seriesName
+            }:  ${Math.round(params[3].value)}${
+              self[`${metric}Headers`][3][4]
+            }<br>`;
+          }
+          return `NDO:  ${
+            this.axisViewSelection
+              ? this.ndoDateCollection[params[0].dataIndex].date
+              : params[0].dataIndex
+          }<br>${line1}${line2}${line3}${line4}`;
+        },
+        axisPointer: {
+          type: 'line',
+        },
+      },
+      toolbox: {
+        orient: 'horizontal',
+        right: 30,
+        top: 10,
+        itemSize: 15,
+        language: 'en',
+        showTitle: true,
+        iconStyle: {
+          borderColor: 'white',
+        },
+        emphasis: {
+          iconStyle: {
+            textFill: '#000',
+            textBackgroundColor: '#fff',
+            textPadding: 5,
+          },
+        },
+        feature: {
+          dataZoom: {
+            yAxisIndex: false,
+            iconStyle: {
+              borderColor: 'white',
+            },
+          },
+          myLockFeature: {
+            show: true,
+            id: 0,
+            title: 'Connect Chart',
+            icon: this.featureIcon[idx],
+            iconStyle: {
+              color: 'white',
+            },
+            onclick: () => {
+              this.connectCharts[idx] = !this.connectCharts[idx];
+              this.onClickSelectGroupBtn(idx);
+            },
+            emphasis: {
+              iconStyle: {
+                color: 'red',
+              },
+            },
+          },
+          myStateFeature: {
+            show: true,
+            id: 1,
+            title: 'Active State',
+            icon: activeState,
+            iconStyle: {
+              color: 'white',
+            },
+            onclick: () => {
+              this.dataZoomIcon[idx] = !this.dataZoomIcon[idx];
+              this.onClickActiveGroupBtn(idx, this.connectCharts[idx]);
+            },
+            emphasis: {
+              iconStyle: {
+                color: 'red',
+              },
+            },
+          },
+        },
+      },
+      legend: {
+        top: 15,
+        icon: 'roundRect',
+        align: 'auto',
+        itemWidth: 18,
+        itemHeight: 5,
+        textStyle: {
+          fontSize: 13,
+          color: 'white',
+        },
+        data: legendValues.map((item: any) => {
+          return item[1];
+        }),
+      },
+      xAxis: [
+        {
+          type: 'category',
+          nameGap: 30,
+          name: 'NDO',
+          nameLocation: 'middle',
+          textStyle: {
+            color: 'white',
+          },
+          data: self.ndoDateCollection.map((item, i) => {
+            return this.axisViewSelection ? item.date : item.ndo;
+          }),
+        },
+      ],
+      yAxis: [
+        {
+          show: this[`${metric}Headers`][idx][3] === 0 ? true : false,
+          type: 'value',
+          position: 'left',
+          nameLocation: 'middle',
+          min: 0,
+          nameGap: 40,
+          max: this[`${metric}Collection`].max,
+          name: this.axisValues[idx][0],
+          axisLabel: {
+            formatter: (value: any) => {
+              return `${value}${self[`${metric}Headers`][idx][4]}`;
+            },
+            fontSize: 11,
+          },
+        },
+        {
+          show: true,
+          type: 'value',
+          min: 0,
+          nameGap: 40,
+          nameLocation: 'middle',
+          max: this[`${metric}Collection`].max,
+          position: 'right',
+          name: this.axisValues[idx][2],
+          axisLabel: {
+            formatter: function (value: any) {
+              return `${value}${self.axisValues[idx][3]}`;
+            },
+            fontSize: 11,
+          },
+        },
+      ],
+      dataZoom: [
+        {
+          show: true,
+          start: 0,
+          end: 20,
+          filterMode: 'none',
+        },
+        {
+          type: 'inside',
+        },
+      ],
+
+      series: this.getProgressionData(metric),
+    });
+  }
 }

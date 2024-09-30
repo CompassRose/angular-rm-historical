@@ -1,8 +1,17 @@
-
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { Observable } from 'rxjs';
-import { SeasonalItems, HistoryData, ColumnValues, ODLocate, QueryItems, QueryMap, TableValues, InventoryValues } from './models/dashboard.model';
+import {
+  SeasonalItems,
+  HistoryData,
+  ColumnValues,
+  ODLocate,
+  QueryItems,
+  QueryMap,
+  TableValues,
+  InventoryValues,
+  RegionList,
+} from './models/dashboard.model';
 import { MetricMapper } from './services/flight-history-mapper';
 import { map } from 'rxjs/operators';
 
@@ -10,7 +19,6 @@ const flightDataMapper = new MetricMapper();
 
 @Injectable()
 export class DashboardState {
-
   public apiFlights487Subject$ = new BehaviorSubject<any>([]);
   public apiFlights748Subject$ = new BehaviorSubject<any>([]);
   public apiFlights5145Subject$ = new BehaviorSubject<any>([]);
@@ -30,7 +38,7 @@ export class DashboardState {
   public airportCodesBehaviorSubject$ = new BehaviorSubject<ODLocate[]>([]);
   public brushSelectedFlights$ = new BehaviorSubject<any>([]);
 
-  public columnValues$ = new Subject<ColumnValues>();
+  public columnValues$ = new BehaviorSubject<ColumnValues>(null);
   public inventoryValues$ = new Subject<InventoryValues>();
   public regionDestinations$ = new BehaviorSubject<any>([]);
 
@@ -42,10 +50,7 @@ export class DashboardState {
 
   public queryItemBehaviorSubject$ = new BehaviorSubject<any>({});
 
-
-
   public tableColumnApiSubject$ = new BehaviorSubject<QueryMap>(null);
-  public codeMirrorOptionsSubject$ = new BehaviorSubject<any>(null);
 
   public tableApiSubject$ = new BehaviorSubject<TableValues[]>([]);
 
@@ -53,35 +58,29 @@ export class DashboardState {
   // Flight Categorization values Shared with Details. World Components
 
   public setQueryList(items: QueryItems) {
-    this.queryItemBehaviorSubject$.next(items)
+    this.queryItemBehaviorSubject$.next(items);
   }
 
   public returnQueryList(): Observable<QueryItems> {
     return this.queryItemBehaviorSubject$;
   }
 
-
-  public setMirrorOptions(opts: any) {
-    this.codeMirrorOptionsSubject$.next(opts)
-  }
-
-  public getMirrorOptions(): Observable<any> {
-    return this.codeMirrorOptionsSubject$;
-  }
-
-
   public setRegionList(regions: string[]) {
-    this.regionListBehaviorSubject$.next(regions)
+    this.regionListBehaviorSubject$.next(regions);
   }
 
   public setNdoList(ndoVals: any[]) {
-    this.ndoListBehaviorSubject$.next(ndoVals)
+    this.ndoListBehaviorSubject$.next(ndoVals);
   }
 
   public setplotTypes(value: any) {
-    this.plotTypeBehaviorSubject$.next(value)
+    console.log('setplotTypes ', value);
+    this.plotTypeBehaviorSubject$.next(value);
   }
 
+  public returnplotType(): Observable<any> {
+    return this.plotTypeBehaviorSubject$;
+  }
 
   public returnRegionList(): Observable<string[]> {
     return this.regionListBehaviorSubject$;
@@ -91,15 +90,11 @@ export class DashboardState {
     return this.ndoListBehaviorSubject$;
   }
 
-  public returnplotType(): Observable<any> {
-    return this.plotTypeBehaviorSubject$;
-  }
-
-  ///  End 
+  ///  End
   // ---------------
 
   public setAirportCodes(codes: any[]) {
-    this.airportCodesBehaviorSubject$.next(codes)
+    this.airportCodesBehaviorSubject$.next(codes);
   }
 
   public getAirportCodes(): Observable<ODLocate[]> {
@@ -107,49 +102,57 @@ export class DashboardState {
   }
 
   public getStaticMetricData(): Observable<any[]> {
-    return this.previousYearDataSubject$
-      .pipe(
-        map((items: any[]) => {
-          console.log('previousYearDataSubject$ previousYearDataSubject$ ********************')
-          return flightDataMapper.convertValuesToMetricModel(items);
-        }));
+    return this.previousYearDataSubject$.pipe(
+      map((items: any[]) => {
+        console.log(
+          'previousYearDataSubject$ previousYearDataSubject$ ********************'
+        );
+        return flightDataMapper.convertValuesToMetricModel(items);
+      })
+    );
   }
-
-  public getStaticCompFareData(): Observable<any[]> {
-    return this.competitiveFareSubject$
-      .pipe(map((items: any[]) => flightDataMapper.convertCompetitiveFareModel(items)));
-  }
-
-
 
   public setClusteredValues(values: any[]) {
     this.clusteredValuesSubject$.next(values);
   }
 
   public getClusteredValues(): Observable<any[]> {
-
     return this.clusteredValuesSubject$.asObservable();
   }
 
-
-  public getCategorizedValues(region: any[], plot: any, ndoRanges: any): Observable<any[]> {
+  public getCategorizedValues(
+    region: any[],
+    plot: any,
+    ndoRanges: any
+  ): Observable<any[]> {
     let returnItems = [];
-    return this.categorizedValuesSubject$
-      .pipe(
-        map((items: any[]) => {
-          if (items.length > 0) {
-            //console.log('items ', items)
-            returnItems = flightDataMapper.convertCategorizedModel(items, region, plot, ndoRanges);
-          }
-          return returnItems
-        }));
+    return this.categorizedValuesSubject$.pipe(
+      map((items: any[]) => {
+        if (items.length > 0) {
+          //console.log('items ', items)
+          returnItems = flightDataMapper.convertCategorizedModel(
+            items,
+            region,
+            plot,
+            ndoRanges
+          );
+        }
+        return returnItems;
+      })
+    );
   }
 
+  public setGlobalRegionObjects(regions: any[]) {
+    flightDataMapper.regionCollectionSubject$.next(regions);
+  }
+
+  public getGlobalRegionObjects(): Observable<RegionList[]> {
+    return flightDataMapper.regionCollectionObjectSubject$;
+  }
 
   public getGlobalRegions(): Observable<any[]> {
     return flightDataMapper.regionCollectionSubject$.asObservable();
   }
-
 
   public setTableApiValues(tableData: TableValues[]) {
     this.tableApiSubject$.next(tableData);
@@ -176,6 +179,7 @@ export class DashboardState {
   }
 
   public setColumnValues(values: ColumnValues) {
+    // console.log('  setColumnValues ', values)
     this.columnValues$.next(values);
   }
 
@@ -189,7 +193,7 @@ export class DashboardState {
   }
 
   public getRegionSpecificDestinations(): Observable<any> {
-    return this.regionDestinations$.asObservable()
+    return this.regionDestinations$.asObservable();
   }
 
   public setInventoryValues(values: InventoryValues) {
@@ -201,7 +205,10 @@ export class DashboardState {
   }
 
   public setBrushSelectedFlights(selected: number[]) {
-    this.brushSelectedFlights$.next(flightDataMapper.getFilteredResults(selected));
+    //console.log('setBrushSelectedFlights ', selected)
+    this.brushSelectedFlights$.next(
+      flightDataMapper.getFilteredResults(selected)
+    );
   }
 
   public getBrushSelectedFlights(): Observable<any[]> {
@@ -209,7 +216,7 @@ export class DashboardState {
   }
 
   public setCategorizedValues(values: any[]) {
-    // console.log('setCategorizedValues ', values)
+    //console.log('setCategorizedValues ', values)
     this.categorizedValuesSubject$.next(values);
   }
 
@@ -222,17 +229,27 @@ export class DashboardState {
   }
 
   public setCompetitiveFareData(compFares: any[]) {
+    //console.log('setCompetitiveFareData ', compFares);
     this.competitiveFareSubject$.next(compFares);
+  }
+
+  public getStaticCompFareData(): Observable<any[]> {
+    return this.competitiveFareSubject$.pipe(
+      map((items: any[]) => {
+        console.log('items ', items);
+        return flightDataMapper.convertCompetitiveFareModel(items);
+      })
+    );
   }
 
   public setMonthlyAvailabilityData(previousYearValues: any[]) {
     this.availabilityCollection.push(previousYearValues);
-    console.log('setMonthlyAvailabilityData ', previousYearValues)
+    console.log('setMonthlyAvailabilityData ', previousYearValues);
     this.monthlyAvailabiltySubject$.next(this.availabilityCollection);
   }
 
   public getMonthlyAvailabilityData(): Observable<any[]> {
-    console.log('getMonthlyAvailabilityData )))))))))))))))))))))))))))   ')
+    console.log('getMonthlyAvailabilityData )))))))))))))))))))))))))))   ');
     return this.monthlyAvailabiltySubject$.asObservable();
   }
 
@@ -255,5 +272,4 @@ export class DashboardState {
   public getForecastData(): Observable<SeasonalItems[]> {
     return this.forecastDataSubject$.asObservable();
   }
-
 }

@@ -2,12 +2,14 @@ import { Component, Input, Output, EventEmitter, SimpleChange, OnDestroy, Change
 import { DashboardFacade } from '../dashboard.facade';
 
 import { AgGridAngular } from 'ag-grid-angular';
-import { ColDef, GridApi, GridOptions } from 'ag-grid-community'; // Column Definition Type Interface
+//import { ColDef, GridApi, GridOptions } from 'ag-grid-community'; // Column Definition Type Interface
+import { ColDef, FirstDataRenderedEvent, GridApi, GridOptions } from "@ag-grid-community/all-modules";
 
-//import 'ag-grid-community/styles/ag-theme-balham.css';
 
 import { EChartsOption } from 'echarts';
 import * as echarts from 'echarts';
+import { IRowNode } from 'ag-grid-community';
+
 declare var document;
 
 export interface PieChartData {
@@ -29,34 +31,35 @@ export class DetailsComponent implements OnChanges, AfterViewInit, OnDestroy {
 
   @Input()
   set plotTypeSelectInput(state: any) {
-    console.log('plotTypeSelectInput ', state)
+    // console.log('plotTypeSelectInput ', state)
   }
 
+  public checkboxSelection: true;
 
-  public gridOptions: GridOptions = {
+  public gridOptions: any = {
     animateRows: true,
-    //floatingFilter: false,
-    enableCellChangeFlash: true,
+    enableCellChangeFlash: false,
     rowSelection: 'multiple',
-    suppressRowClickSelection: true,
+    suppressRowClickSelection: false,
+    rowMultiSelectWithClick: true,
     paginationPageSize: 19,
     pagination: true,
     domLayout: 'autoHeight',
     columnDefs: [
-
       {
 
-        headerName: '',
-        // field: 'cbox',
-        minWidth: 20,
-        // cellRenderer: 'agCheckboxCellRenderer',
-        // cellEditor: 'agCheckboxCellEditor',
-        sortable: true,
+
         headerCheckboxSelection: true,
-        headerCheckboxSelectionFilteredOnly: true,
         checkboxSelection: true,
-        width: 30,
+        floatingFilter: false,
+        // To only show the checkbox on the first column
+        headerCheckboxSelectionFilteredOnly: true,
+        suppressMenu: true,
+        width: 45,
+        // Optional: suppress sizeToFit to keep the checkbox column from resizing
+        suppressSizeToFit: false,
       },
+
       {
         field: "Date",
         suppressSizeToFit: false,
@@ -98,7 +101,7 @@ export class DetailsComponent implements OnChanges, AfterViewInit, OnDestroy {
   public gridColumnApi: any;
   public gridApi: GridApi;
   public rowData: any[] = [];
-
+  public rowSelection: "single" | "multiple" = "multiple";
   public chartDataCollection: PieChartData[] = [];
 
   public myChart: echarts.ECharts = null;
@@ -109,32 +112,53 @@ export class DetailsComponent implements OnChanges, AfterViewInit, OnDestroy {
 
   public selectedFlights = 0;
 
+  public rowFlightIndexes: any[] = [];
 
+  @Input()
+  set detailsOpened(state: boolean) {
+    console.log('detailsOpened ', state)
+    this.gridApi.selectAll();
+  }
 
-  constructor(public dashboardFacade: DashboardFacade, private host: ElementRef) { }
+  @Output()
+  public updateDetailRows: EventEmitter<any> = new EventEmitter();
+
+  constructor(public dashboardFacade: DashboardFacade, private host: ElementRef) {
+
+  }
 
 
   public ngAfterViewInit(): void {
 
-
     this.dashboardFacade.getBrushSelectedFlights()
       .subscribe((response: any[]) => {
-        //console.log('response ', response)
+
+        this.rowFlightIndexes = [];
+
         if (response.length > 0) {
+          // console.log('response ', response)
+          response.forEach((d) => {
+
+            this.rowFlightIndexes.push(d[3])
+          })
           this.selectedFlights = response.length;
           this.setDataGrid(response);
           this.initializeChartValues();
-          this.setHeaderNames()
+          this.setHeaderNames();
+
         } else {
           if (this.myChart) {
             this.selectedFlights = 0;
             this.setDataGrid(0);
-            if (echarts.init(document.getElementById('piece-pie'))) {
-              this.myChart = null;
-              echarts.init(document.getElementById('piece-pie')).dispose();
-            }
+
+            // if (echarts.init(document.getElementById('piece-pie'))) {
+            //   this.myChart = null;
+            //   echarts.init(document.getElementById('piece-pie')).dispose();
+            // }
           }
         }
+        // console.log('\n\n onSelectionChanged  rowFlightIndexes   ', this.selectedFlights)
+
       })
 
     this.targetElement = this.host.nativeElement.querySelector('#piece-pie');
@@ -158,41 +182,90 @@ export class DetailsComponent implements OnChanges, AfterViewInit, OnDestroy {
   ngOnChanges(changes: { [propName: string]: SimpleChange }): void {
     //@ts-ignore
     this.plotType = changes.plotTypeSelectInput.currentValue;
-    // console.log('changes ', changes)
+    //console.log('changes ', changes)
   }
+
+  firstDataRendered(params) {
+    params.api.sizeColumnsToFit();
+  }
+
+
+  onSelectionChanged(event) {
+
+    const selectedRows = this.gridApi.getSelectedRows();
+    console.log('\n\n onSelectionChanged  selectedRows ', selectedRows, ' event ', event)
+    const selectedRowIndexes = [...this.rowFlightIndexes];
+    //this.rowFlightIndexes = this.rowData.filter((row, index) => !this.rowFlightIndexes.includes(row.Flight));
+    selectedRows.forEach((selectedRow, index) => {
+      const flightIndex = this.rowFlightIndexes.indexOf(selectedRow.Flight);
+      if (flightIndex !== -1) {
+        console.log('      selectedRows ', selectedRow)
+        selectedRowIndexes.splice(flightIndex, 1);
+      }
+    })
+
+    // this.dashboardFacade.setBrushSelectedFlights(selectedRowIndexes);
+  }
+
 
 
   setDataGrid(flights) {
     if (flights.length > 0) {
       this.rowData = flights.map(d => {
-        return { cbox: true, Date: d[4], Flight: d[3], Origin: d[5], Destination: d[6], LF: d[1], Ntile: d[2], region: d[7] }
+        return { cbox: true, Date: d[4], Flight: d[3], Origin: d[5], Destination: d[6], LF: d[1], Ntile: d[2], region: d[7], selected: true }
       })
       setTimeout(() => {
         this.refreshGridData();
       }, 0);
     }
-    if (flights === 0 && this.rowData.length > 0) {
-      //@ts-ignore
-      this.gridOptions.api.setRowData([]);
-    }
+
+    console.log('this.rowData. ', this.rowData)
   }
 
   // Set ag-grid headers
   setHeaderNames() {
+    //console.log('this.gridOptions.columnDefs ', this.gridOptions.columnDefs)
     this.gridOptions.columnDefs[5].headerName = this.kpiFieldStr[this.plotType];
+
+
     this.gridApi.setColumnDefs(this.gridOptions.columnDefs);
+    //this.gridApi.applyColumnDefChanges({ update: this.gridOptions.columnDefs });
+    this.gridApi.sizeColumnsToFit();
+    //this.gridApi.selectAll();
   }
+
+  onFirstDataRendered(event: FirstDataRenderedEvent) {
+    console.log('\n\n\n\nThe first data was rendered', event);
+  }
+
+
+  getSelectedRows() {
+    var selectedNodes = this.gridApi.getSelectedNodes();
+    var selectedData = selectedNodes.map(node => node.data);
+    var selectedDataStringPresentation = selectedData.map(node => node.make + ' ' + node.model).join(', ');
+    //console.log(`Selected nodes: ${selectedDataStringPresentation}`);
+  }
+
 
   refreshGridData() {
     this.gridApi.setRowData(this.rowData);
     this.gridApi.sizeColumnsToFit();
   }
 
+  //  this.gridApi.selectAll();
   public onGridReady(params) {
+    console.log('params ', params)
     this.gridApi = params.api;
     this.gridColumnApi = params.columnApi;
     this.gridOptions.rowHeight = 30;
     this.gridOptions.headerHeight = 30;
+    params.api.forEachNode((node: any) => {
+      console.log('node ', node)
+      if (node.data.selected) {
+        params.api.selectNode(node, true);
+      }
+    });
+
   }
 
 
@@ -200,7 +273,7 @@ export class DetailsComponent implements OnChanges, AfterViewInit, OnDestroy {
 
   initializeChartValues() {
 
-    this.setHeaderNames();
+    //this.setHeaderNames();
     this.chartDataCollection = [];
     let tempCollector = [];
 
@@ -242,7 +315,9 @@ export class DetailsComponent implements OnChanges, AfterViewInit, OnDestroy {
   setPieChart() {
 
     const chart: HTMLCanvasElement = document.getElementById('piece-pie') as HTMLCanvasElement;
-    this.myChart = echarts.init(chart, 'dark');
+    if (!this.myChart) {
+      this.myChart = echarts.init(chart, 'dark');
+    }
 
     setTimeout(() => {
       this.initializePieChart();

@@ -86,18 +86,22 @@ export class AppComponent implements AfterViewInit {
 
   constructor(public router: Router, public dataService: DataService, @Inject(DOCUMENT) private readonly documentRef: Document) {
 
+    const handleMouseWheel = null;
+
+    window.addEventListener('mousewheel', handleMouseWheel, { passive: true });
+
     this.dataService.dashboardFacade.screenSelectedSubject$
       .subscribe((value: any) => {
-        console.log('screenSelectedSubject$ ', value)
+        // console.log('screenSelectedSubject$ ', value)
       })
 
   }
 
 
   public ngAfterViewInit() {
-    console.log('****  ngAfterViewInit$ ',)
+    //console.log('****  ngAfterViewInit$ ',)
     this.setFocusedElement(0);
-    this.router.navigate(['/start-page']);
+    //this.router.navigate(['/start-page']);
     //'flight-options'
     //'/passenger-details'
     // '/start-page'
@@ -118,12 +122,16 @@ export class AppComponent implements AfterViewInit {
 
   public setFocusedElement(idx: number) {
     console.log('setFocusedElement ', idx)
-
+    if (idx === 0) {
+      this.router.navigate(['flightCategories']);
+    } else {
+      this.router.navigate(['historical']);
+    }
     this.focusedElement = idx;
   }
 
   public collapseQueryWindow() {
-    console.log('collapseQueryWindow ', ' toggleQueryVisible ', this.toggleQueryVisible)
+    //console.log('collapseQueryWindow ', ' toggleQueryVisible ', this.toggleQueryVisible)
   }
 
 
@@ -132,7 +140,8 @@ export class AppComponent implements AfterViewInit {
   }
 
   ngOnInit() {
-    //this.router.navigate(['/app', 'flightCategories']);
+    this.router.navigate(['flightCategories']);
+    // this.router.navigate(['/app', 'flightCategories']);
     // console.log('navigate To  ', '  ', this.toggleQueryVisible)
     //this.router.navigate(['/app']);
   }

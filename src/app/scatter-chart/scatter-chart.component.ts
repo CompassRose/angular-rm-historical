@@ -78,7 +78,7 @@ export class ScatterChartComponent implements OnDestroy {
 
   @Input()
   set whichMetricState(index: any) {
-    console.log('SCATTER  whichMetricState ', index)
+    //console.log('SCATTER  whichMetricState ', index)
     if (index === 0) {
       setTimeout(() => {
         this.sendForChartValues(this.selectedRegion, this.plotType, this.NdoRange);
@@ -89,18 +89,6 @@ export class ScatterChartComponent implements OnDestroy {
     }
 
   }
-
-
-  // General idea: 
-  //   even tool that Farukh has already build, involves displaying general market analysis:
-
-  //         Two dimensional axis scatter chart with axes as:
-
-  //            KPIs: LoadFactor, AvgFare, RASM, RpS, Slope
-
-  //            and Color as the cluster(cluster_Geo, cluster_Slope, cluster_Dist)
-
-  //   + second part of the visualization might be possible map(using Geo coordinates
 
 
   constructor(private host: ElementRef,
@@ -118,7 +106,7 @@ export class ScatterChartComponent implements OnDestroy {
 
         if (response) {
 
-          // console.log('Scatter this.selectedRegion ', response)
+          //console.log('Scatter this.selectedRegion ', response)
           this.selectedRegion = response.regions;
           this.plotType = response.plotType;
           this.NdoRange = response.ndoList;
@@ -138,13 +126,13 @@ export class ScatterChartComponent implements OnDestroy {
   }
 
   ngOnDestroy(): void {
-    // console.log('ngOnDestroy ngOnDestroy ngOnDestroy')
+    console.log('\n -----------------------   ngOnDestroy ngOnDestroy ngOnDestroy ---------------------------- \n')
     //this.scatterObserver.unobserve(this.targetElement);
   }
 
 
   public onChartInit(e: any) {
-    console.log('onChartInit ', e)
+    // console.log('onChartInit ', e)
     this.targetElement = this.host.nativeElement.querySelector('#scatter-chart');
     // @ts-ignore
     this.scatterObserver = new ResizeObserver(entries => {
@@ -158,7 +146,7 @@ export class ScatterChartComponent implements OnDestroy {
 
   // Sets titles and axis text <wip>
   private getReferenceValues() {
-    // console.log('this.metricSpecificValues ', this.metricSpecificValues)
+    //console.log('this.metricSpecificValues ', this.metricSpecificValues)
     this.referenceName = this.metricSpecificValues[this.metricSpecificValues.findIndex(val => {
 
       return val.id === this.plotType
@@ -167,7 +155,7 @@ export class ScatterChartComponent implements OnDestroy {
 
 
   public sendForChartValues(regions: any[], plot: number, ndoDayRange: any[]) {
-    //console.log('sendForChartValues ', regions)
+    //console.log('sendForChartValues ', regions, ' plot ', plot, ' ndoDayRange ', ndoDayRange)
     if (regions !== undefined) {
 
       this.initChartElements();
@@ -209,7 +197,7 @@ export class ScatterChartComponent implements OnDestroy {
     }
 
     const chart: HTMLCanvasElement = document.getElementById('scatter-chart') as HTMLCanvasElement;
-    this.myChart = echarts.init(chart, 'light');
+    this.myChart = echarts.init(chart, 'dark');
 
     if (this.myChart) {
       this.myChart.showLoading({
@@ -260,19 +248,22 @@ export class ScatterChartComponent implements OnDestroy {
           this.selectedNodes = brushComponent.selected[0].dataIndex;
         }
         if (this.selectedNodes.length > 0) {
+          //console.log('/////////////this.selectedNodes ', brushComponent.selected)
           this.dashboardFacade.setBrushSelectedFlights(this.selectedNodes);
         } else {
+          //console.log('//////NOPEEEEEEE///////this.selectedNodes ', brushComponent.selected)
           this.dashboardFacade.setBrushSelectedFlights([]);
         }
       }
       this.resizeCheck = false;
     });
 
-    this.myChart.on('finished', () => {
-      setTimeout(() => {
-        console.log('*****  Finished Drawing Scatter Chart')
-      }, 0);
-    })
+
+    // this.myChart.on('finished', () => {
+    //   setTimeout(() => {
+    //     console.log('*****  Finished Drawing Scatter Chart')
+    //   }, 0);
+    // })
 
     // console.log('this.referenceName ', this.referenceName)
 
@@ -323,8 +314,8 @@ export class ScatterChartComponent implements OnDestroy {
           color: 'black'
         },
         formatter: (params: any) => {
-          // console.log('params ', params, '\nselectedRegion ', this.selectedRegion)
-          return `${this.referenceName.name}: ${params.value[1]} ${this.referenceName.suffix} <br/>Region: ${this.selectedRegion[(params.value[2] - 1)]}<br/ > NDO: ${params.value[0]} <br/>Flight: ${params.value[3]}<br/ > Date: ${params.value[4]} `
+          //console.log('params ', params, '\nselectedRegion ', this.selectedRegion)
+          //return `${this.referenceName.name}: ${params.value[1]} ${this.referenceName.suffix} <br/>Region: ${this.selectedRegion[(params.value[2] - 1)]}<br/ > NDO: ${params.value[0]} <br/>Flight: ${params.value[3]}<br/ > Date: ${params.value[4]} `
         },
         axisPointer: {
           show: true,

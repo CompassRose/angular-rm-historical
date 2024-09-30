@@ -11,25 +11,6 @@
     }
 }
 
-.collapse-js-button {
-    z-index: 10;
-    margin-left: -20px;
-    margin-top: -8px;
-    width: 35px;
-    height: 42px;
-    background-color: #263238;
-    color: white;
-    font-size: 2.2rem;
-    font-weight: 600;
-    border-top-right-radius: 0.5rem;
-    border-bottom-right-radius: 0.5rem;
-    padding: 10px !important;
-
-    &:hover {
-        background-color: lighten($brand-link-blue-text, 10%) !important;
-    }
-}
-
 .mat-slide-toggle {
     transform: scale(0.7) !important;
 }
@@ -44,73 +25,6 @@
 
 :host ::ng-deep .mat-slide-toggle.mat-checked:not(.mat-disabled) .mat-slide-toggle-thumb {
     background-color: #49c5b6;
-}
-
-.triad-parent {
-    width: 100%;
-    padding-top: 10px;
-    background: var(--accelya-primary-blue) !important;
-    border-bottom: 1px #d2e1ff solid;
-    justify-content: flex-start;
-    //border-bottom: 3px solid #ccd3e1;
-    .triad-suppot {
-        width: 100%;
-        flex: 1 1 0;
-        align-items: flex-end;
-        display: flex;
-        .selection-triad {
-            display: flex;
-            margin-right: 5px;
-            text-decoration: none;
-            border: 1px solid blue;
-            border-top-right-radius: 5px;
-            border-top-left-radius: 5px;
-            align-items: flex-end;
-
-            //gap: 26px;
-            &.not-active {
-                padding: 6px 20px 6px 20px;
-                border-color: blue;
-                color: rgb(0, 170, 255);
-                background: lighten(#012169, 10%) !important;
-                //border-bottom: 3px solid #012169;
-            }
-            &.focused {
-                padding: 10px 20px 10px 20px;
-                color: rgb(214, 214, 214);
-                border-color: white;
-                background: var(--accelya-primary-blue) !important;
-                //border-bottom: 3px solid #ccd3e1;
-            }
-            // .selection-number-circle {
-            //     width: 24px;
-            //     height: 24px;
-            //     border-radius: 24px;
-            //     flex-direction: column;
-            //     justify-content: center;
-            //     align-items: center;
-            //     display: inline-flex;
-            //     .circle-number {
-            //         font-size: 14px;
-            //         font-family: Open Sans;
-            //         font-weight: 600;
-            //         line-height: 20px;
-            //         word-wrap: break-word;
-            //     }
-            //     &.not-active {
-            //         color: #012169;
-            //         background: #dee7f8;
-            //     }
-            //     &.focused {
-            //         color: #ffffff;
-            //         background: #012169;
-            //     }
-            //     &:hover {
-            //         background: #ccd3e1;
-            //     }
-            // }
-        }
-    }
 }
 
 // .affected-title-row {

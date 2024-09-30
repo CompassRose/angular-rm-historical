@@ -23,7 +23,7 @@ export class ScatterChartClusterComponent implements OnDestroy, OnInit {
     { id: 1, name: 'Standardized', ref: 'Region', suffix: '', min: -3, max: 3, right: 215 }
   ];
 
-  public symbolSize = 8;
+  public symbolSize = 5;
   public data: any[] = [];
   public targetElement: any;
   public scatterObserver: any;
@@ -109,7 +109,7 @@ export class ScatterChartClusterComponent implements OnDestroy, OnInit {
       .subscribe((response) => {
 
         this.clusteredValues = response;
-        console.log('Market Analysis Values  ', this.clusteredValues)
+        //console.log('Market Analysis Values  ', this.clusteredValues)
         const clusterDist = [];
         const clusterGeo = [];
         const clusterSlope = [];
@@ -127,7 +127,7 @@ export class ScatterChartClusterComponent implements OnDestroy, OnInit {
 
           this.chartValues.push([+cv.Slope, +cv.RpS])
         })
-        console.log('Cluster_Dist ', clusterDist, '\nCluster_Geo ', clusterGeo, '\nCluster_Slope ', clusterSlope)
+        //console.log('Cluster_Dist ', clusterDist, '\nCluster_Geo ', clusterGeo, '\nCluster_Slope ', clusterSlope)
       })
 
 
@@ -141,7 +141,7 @@ export class ScatterChartClusterComponent implements OnDestroy, OnInit {
           this.selectedRegion = response.regions;
           this.plotType = response.plotType;
           this.NdoRange = response.ndoList;
-          console.log('Scatter this.selectedRegion ', this.selectedRegion)
+          // console.log('Scatter this.selectedRegion ', this.selectedRegion)
           if (this.myChart) {
             this.dashboardFacade.setBrushSelectedFlights([]);
             setTimeout(() => {
@@ -156,18 +156,21 @@ export class ScatterChartClusterComponent implements OnDestroy, OnInit {
   }
 
   public ngOnInit(): void {
-    var chartDom = document.getElementById('scatter-chart-cluster');
-    this.myChart = echarts.init(chartDom);
+    const chartDom = document.getElementById('scatter-chart-cluster');
+    if (!this.myChart) {
+      this.myChart = echarts.init(chartDom);
+    }
+
   }
 
   public destroyChartElements() {
-    console.log('CLUSTER destroyChartElements destroyChartElements')
+    //console.log('CLUSTER destroyChartElements destroyChartElements')
     if (this.myChart !== null) {
       this.myChart = null;
     }
-    if (echarts.init(document.getElementById('scatter-chart-cluster'))) {
-      echarts.init(document.getElementById('scatter-chart-cluster')).dispose();
-    }
+    // if (echarts.init(document.getElementById('scatter-chart-cluster'))) {
+    //   echarts.init(document.getElementById('scatter-chart-cluster')).dispose();
+    // }
   }
 
   public setChartValues(data: any) {
@@ -422,7 +425,7 @@ export class ScatterChartClusterComponent implements OnDestroy, OnInit {
         datasetIndex: 1
       }
     };
-    console.log('option  ', this.options)
+    //console.log('option  ', this.options)
 
     setTimeout(() => {
       this.options && this.myChart.setOption(this.options);
@@ -438,6 +441,7 @@ export class ScatterChartClusterComponent implements OnDestroy, OnInit {
           if (this.selectedNodes.length > 0) {
             this.dashboardFacade.setBrushSelectedFlights(this.selectedNodes);
           } else {
+            //console.log('ELSEEEEEEE')
             this.dashboardFacade.setBrushSelectedFlights([]);
           }
         }
@@ -475,12 +479,12 @@ export class ScatterChartClusterComponent implements OnDestroy, OnInit {
   // Sets titles and axis text <wip>
   private getReferenceValues() {
 
-    console.log('this.metricSpecificValues ', this.metricSpecificValues)
+    //console.log('this.metricSpecificValues ', this.metricSpecificValues)
     this.referenceName = this.metricSpecificValues[this.metricSpecificValues.findIndex(val => {
 
       return val.id === this.plotType
     })];
-    console.log('this.metricSpecificValues ', this.referenceName)
+    //console.log('this.metricSpecificValues ', this.referenceName)
   }
 
 
@@ -575,11 +579,11 @@ export class ScatterChartClusterComponent implements OnDestroy, OnInit {
       this.resizeCheck = false;
     });
 
-    this.myChart.on('finished', () => {
-      setTimeout(() => {
-        console.log('*****  Finished Drawing Scatter Chart')
-      }, 0);
-    })
+    // this.myChart.on('finished', () => {
+    //   setTimeout(() => {
+    //     console.log('*****  Finished Drawing Scatter Chart')
+    //   }, 0);
+    // })
 
     // console.log('this.referenceName ', this.referenceName)
 
@@ -598,8 +602,8 @@ export class ScatterChartClusterComponent implements OnDestroy, OnInit {
         padding: [16, 0, 20, 35],
       },
       grid: {
-        left: 65,
-        right: 220,
+        left: '25%',
+        right: 120,
         bottom: 55,
         top: 85,
         containLabel: true
@@ -608,15 +612,15 @@ export class ScatterChartClusterComponent implements OnDestroy, OnInit {
       visualMap: {
         type: 'piecewise',
         top: '40%',
-        right: 10,
+        left: 120,
         orient: 'vertical',
         min: 1,
         max: 5,
         dimension: 2,
         pieces: pieces,
-        textStyle: {
-          color: 'LemonChiffon',
-        }
+        // textStyle: {
+        //   color: 'rgba(255, 255, 255, 1)',
+        // }
       },
       tooltip: {
         position: 'top',
@@ -692,6 +696,7 @@ export class ScatterChartClusterComponent implements OnDestroy, OnInit {
           formatter: '{value}',
           color: 'white',
         },
+
         axisLine: {
           show: true,
           onZero: false,
@@ -729,9 +734,10 @@ export class ScatterChartClusterComponent implements OnDestroy, OnInit {
       yAxis: [
         {
           type: 'value',
+          show: true,
           min: this.referenceName.min,
           max: this.referenceName.max + 8,
-          nameGap: 35,
+          //nameGap: 35,
           minInterval: 1,
           name: this.referenceName.name,
           nameLocation: 'middle',
@@ -755,6 +761,16 @@ export class ScatterChartClusterComponent implements OnDestroy, OnInit {
               color: 'rgb(255, 255, 255)',
             }
           },
+          axisLine: {
+            show: true,
+            onZero: true,
+            linestyle: {
+              width: 2,
+              color: 'rgb(255, 255, 255)',
+              opacity: 1
+            },
+          },
+
           splitLine: {
             show: false
           }
@@ -832,7 +848,7 @@ export class ScatterChartClusterComponent implements OnDestroy, OnInit {
 
     setTimeout(() => {
       this.myChart.hideLoading();
-    }, 200);
+    }, 100);
 
   }
 

@@ -1,64 +1,110 @@
-<form [formGroup]="dateByRegionOptions">
+<div class="category-frame">
 
-  <div class="category-frame">
+  <div class="region-space"
+     *ngIf="(dataService.dashboardFacade.getGlobalRegionObjects() | async) as regions">
+    <div class="font-14 ms-3 me-2 text-off-white">Region:</div>
 
-    <div class="region-space"
-       *ngIf="(dataService.dashboardFacade.getGlobalRegions() | async) as regions">
-      <div class="font-14 ms-3 me-2 text-off-white">Region:</div>
-
-      <ng-multiselect-dropdown formControlName="region"
-         [placeholder]="'Select Regions'"
-         [data]="regions"
-         [settings]="dropdownSettings"
-         (onSelect)="onRegionSelect($event)"
-         (onDeSelect)="onRegionDeSelect($event)">
-      </ng-multiselect-dropdown>
-
-      <ng-template #regionLoad>
-        Loading...
+    <ng-select class="blue-button fit-content-width"
+       style="width: 450px"
+       [multiple]="true"
+       [loading]="selectedRegions.length === 0 ? true : false"
+       [closeOnSelect]="false"
+       [clearable]="false"
+       [searchable]="false"
+       [items]="regions"
+       [(ngModel)]="selectedRegions"
+       [maxSelectedItems]="4"
+       [bindLabel]="'value'">
+      <ng-template ng-label-tmp
+         let-item="item"
+         let-i="index">
+        <div class="d-flex align-items-center">
+          <div class="px-2">{{ item.value }}</div>
+          <div class="btn-clear py-1 px-2 ms-2"
+             (click)="onRegionSelect(item)">
+            &times;
+          </div>
+        </div>
       </ng-template>
-    </div>
-
-    <div class="plottype-space"
-       *ngIf="(dataService.dashboardFacade.getplotType() | async)">
-      <div class="font-14 ms-3 me-2 text-off-white">Plot Type:</div>
-
-      <ng-multiselect-dropdown formControlName="plotType"
-         [data]="plotListLeft"
-         [placeholder]="'Select Plot Type'"
-         [settings]="dropdownSettingsSingle"
-         class="singleselect"
-         (onSelect)="onPlotTypeSelect($event)">
-      </ng-multiselect-dropdown>
-
-      <ng-template #plotLoad>
-        Loading...
+      <ng-template ng-option-tmp
+         let-item="item"
+         let-i="index">
+        <div class="d-flex">
+          <input type="checkbox"
+             [checked]="item.state"
+             (click)="onRegionSelect(item)" />
+          <div class="ms-2">{{ item.value }}</div>
+        </div>
       </ng-template>
-    </div>
+      <ng-template ng-loadingspinner-tmp>
+        <div class="lds-ellipsis">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+      </ng-template>
+    </ng-select>
+  </div>
 
-    <button class="btn btn-primary-light ms-4"
-       (click)="saveSelections()">Save</button>
-    <!-- <button title="Resets values to last saved"
+  <div class="plottype-space">
+    <div class="font-14 ms-3 me-2 text-off-white">Plot Type:</div>
+
+
+    <ng-select #plotTypeSelect
+       class="white-button"
+       style="width: 150px"
+       [multiple]="false"
+       [closeOnSelect]="false"
+       placeholder="Select"
+       [clearable]="false"
+       [searchable]="false"
+       [items]="plotListObject"
+       [ngModel]="plotListObject[selectedPlotType].value"
+       [bindLabel]="'value'">
+
+      <ng-template ng-option-tmp
+         let-item="item"
+         let-i="index">
+        <div class="d-flex">
+          <input type="checkbox"
+             [checked]="item.state"
+             (change)="onPlotTypeSelect(item)" />
+          <div class="ms-2">{{ item.value }}</div>
+        </div>
+      </ng-template>
+    </ng-select>
+    <ng-template #plotLoad>
+      Loading...
+    </ng-template>
+  </div>
+
+  <button class="svg-icon-btn ms-3"
+     (click)="saveSelections()"
+     title="Save Changes">
+    <div class="save-disk"></div>
+  </button>
+
+  <!-- <button title="Resets values to last saved"
                      class="btn btn-primary-light"
                      (click)="cancelEditMode()">Reset</button> -->
-    <div class="button-space me-4">
+  <div class="button-space me-4">
 
-      <div class="d-flex align-items-center ms-auto"
-         *ngIf="(dataService.dashboardFacade.screenGroupSubject$ | async)?.length > 1">
-        <div class="d-flex align-items-center me-2"
-           *ngFor="let item of (dataService.dashboardFacade.screenGroupSubject$ | async) let $idx = index;">
-          <input type="radio"
-             id="{{$idx}}"
-             name="select"
-             [disabled]="item.disabled ? true : false"
-             value="$idx"
-             [checked]="item.id === dataService.dashboardFacade.selectedScreen"
-             (change)="setScreen($idx)" />
-          <label for="{{item.id}}">
-            <div class="noselect multiple font-12 px-1">{{item.name}}</div>
-          </label>
-        </div>
+    <div class="d-flex align-items-center ms-auto"
+       *ngIf="(dataService.dashboardFacade.screenGroupSubject$ | async)?.length > 1">
+      <div class="d-flex align-items-center me-2"
+         *ngFor="let item of (dataService.dashboardFacade.screenGroupSubject$ | async) let $idx = index;">
+        <input type="radio"
+           id="{{$idx}}"
+           name="select"
+           [disabled]="item.disabled ? true : false"
+           value="$idx"
+           [checked]="item.id === dataService.dashboardFacade.selectedScreen"
+           (change)="setScreen($idx)" />
+        <label for="{{item.id}}">
+          <div class="noselect multiple font-12 px-1">{{item.name}}</div>
+        </label>
       </div>
     </div>
   </div>
-</form>
+</div>

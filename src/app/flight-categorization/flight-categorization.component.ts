@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Output, OnDestroy, EventEmitter, Inject } from '@angular/core';
 import { DataService } from '../config-data-service';
 import { DOCUMENT } from '@angular/common';
 
@@ -7,7 +7,9 @@ import { DOCUMENT } from '@angular/common';
   templateUrl: './flight-categorization.component.html',
   styleUrls: ['./flight-categorization.component.scss']
 })
-export class FlightCategorizationComponent {
+export class FlightCategorizationComponent implements OnDestroy {
+
+
 
   public toggleQueryVisible = true;
 
@@ -23,11 +25,12 @@ export class FlightCategorizationComponent {
   public regionSelect: any;
 
   public plotTypeSelect: number = 0;
+
   constructor(public dataService: DataService, @Inject(DOCUMENT) private readonly documentRef: Document) {
 
     this.dataService.dashboardFacade.screenSelectedSubject$
       .subscribe((value: any) => {
-        console.log('screenSelectedSubject$ ', value)
+        //console.log('screenSelectedSubject$ ', value)
       })
 
 
@@ -48,7 +51,7 @@ export class FlightCategorizationComponent {
         } else {
           this.openDetailsFlag = false;
         }
-        console.log('APP Component   response ', response)
+        // console.log('APP Component   response ', response)
       })
 
 
@@ -56,6 +59,14 @@ export class FlightCategorizationComponent {
 
   }
 
+  public ngOnDestroy(): void {
+
+    console.log('******* ngOnDestroy *********')
+  }
+
+  public updateDetailRowsFromDetails(values: any) {
+    console.log('updateDetailRowsFromDetails ', values)
+  }
 
 
   public getProperIcon(): string {
@@ -65,6 +76,7 @@ export class FlightCategorizationComponent {
 
 
   public openDetailsWindow() {
+
     console.log('collapseQueryWindow ', ' toggleQueryVisible ', this.openDetailsFlag);
     this.openDetailsFlag = !this.openDetailsFlag;
 

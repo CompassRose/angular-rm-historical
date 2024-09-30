@@ -1,4 +1,4 @@
-import { IDropdownSettings } from 'ng-multiselect-dropdown';
+
 
 export enum ImagePath {
     devPathToAssets = '../../assets/images/',
@@ -29,11 +29,20 @@ export const plotListLeftOptions = [
     "Standardized",
 ]
 
+export const plotListLeftOptionsObject = [
+    { state: false, value: "Load Factor" },
+    { state: false, value: "Standardized" },
+]
+
+
 export const marketAnalysisOptions = [
     "RpS",
     "RASM",
     "Slope",
-    "Average Fare"
+    "AvgFare",
+    "Revenue",
+    "LoadFactor",
+
 ]
 
 export const departureDateOptions: string[] = [
@@ -51,37 +60,8 @@ export const cabinSelections: string[] = [
     'Eco Cabin: Obk Seats',
 ];
 
-export const nDoDropdownSettings: IDropdownSettings = {
-    singleSelection: false,
-    idField: 'item_id',
-    textField: 'item_text',
-    selectAllText: 'All Regions',
-    limitSelection: 2,
-    unSelectAllText: 'Deselect All Regions',
-    enableCheckAll: false,
-    allowSearchFilter: false
-};
 
-export const dropdownSettings: IDropdownSettings = {
-    singleSelection: false,
-    idField: 'item_id',
-    textField: 'item_text',
-    selectAllText: 'All Regions',
-    limitSelection: 4,
-    unSelectAllText: 'Deselect All Regions',
-    enableCheckAll: false,
-    allowSearchFilter: false
-};
 
-export const dropdownSettingsSingle: IDropdownSettings = {
-    singleSelection: true,
-    idField: 'item_id',
-    textField: 'item_text',
-    closeDropDownOnSelection: true,
-
-    enableCheckAll: false,
-    allowSearchFilter: false,
-};
 
 export const fareClasses = ['Y', 'D', 'B', 'A', 'Z', 'W', 'U', 'S', 'R', 'I', 'L', 'J', 'H', 'K', 'N', 'Q', 'T', 'O'];
 export const days = ['Jan', 'Feb', 'March', 'April', 'May', 'June', 'July', 'Aug', 'Sept', 'Oct'];
@@ -132,7 +112,7 @@ export const jsonContent = `{
         "LegInventory:FlightSA",
         "LegInventory:SA/FC25"
     ],
-    "recordLimit": 4000
+    "recordLimit": 400
 }`
 
 
@@ -177,7 +157,8 @@ chart = document.getElementById('chartAll');
 singleGraph = echarts.init(chart);
 var graphBuilder = new rmcharts.FlightPathGraphBuilder();
 var graphOptions = graphBuilder.buildOptions(apiResponse);
-singleGraph.setOption(graphOptions);`;
+singleGraph.setOption(graphOptions);
+window.addEventListener('resize', examples.refreshChartVisual(singleGraph));`;
 
 export const totalBkCrossGraph =
     `examples.clearChartNodes();
@@ -235,7 +216,7 @@ export const simpleTableContent =
 
 
 
-export const jsonContent2 = '{"resourceNames":["ODMasterKey", "FlightNumber", "DepartureDate", "Origin", "Destination","LegSnapshot:Au/FC1","LegSnapshot:Au/FC2", "LegInventory:CapacityLF","LegInventory:LidLF", "LegInventory:LidLF/Cabin3", "LegInventory:FlightBk", "LegInventory:CabinBk/Cabin3"], "recordLimit": 1500}';
+export const jsonContent2 = '{"resourceNames":["ODMasterKey", "FlightNumber", "DepartureDate", "Origin", "Destination","LegSnapshot:Au/FC1","LegSnapshot:Au/FC2", "LegInventory:CapacityLF","LegInventory:LidLF", "LegInventory:LidLF/Cabin3", "LegInventory:FlightBk", "LegInventory:CabinBk/Cabin3"], "recordLimit": 400}';
 
 export const nTile = "M 39.766 0 L 39.766 56.875 L 28.281 56.875 L 11.484 19.57 L 11.484 56.875 L 0 56.875 L 0 0 L 11.484 0 L 28.32 37.344 L 28.32 0 L 39.766 0 Z M 85.82 0 L 85.82 9.57 L 71.758 9.57 L 71.758 56.875 L 60.234 56.875 L 60.234 9.57 L 46.406 9.57 L 46.406 0 L 85.82 0 Z";
 

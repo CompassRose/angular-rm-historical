@@ -1,3 +1,5 @@
+@import "../../styles/configuration.scss";
+
 .category-frame {
   display: flex;
   align-items: center;
@@ -7,7 +9,7 @@
 
   .region-space {
     display: flex;
-    // min-width: 35%;
+    min-width: 35%;
     align-items: center;
     white-space: nowrap;
   }
@@ -26,103 +28,6 @@
   }
 }
 
-:host ::ng-deep .multiselect-dropdown .dropdown-btn .selected-item-container .selected-item {
-  border: 1px solid rgba(192, 191, 191, 0.3) !important;
-  margin-right: 4px;
-  margin-bottom: 4px;
-  background: transparent !important;
-  padding: 0 7px 0 5px !important;
-  color: #fff;
-  border-radius: 2px;
-  float: left;
-}
-
-:host ::ng-deep .region-space .multiselect-dropdown .dropdown-btn {
-  display: inline-block;
-  border: 1px solid rgb(237, 237, 255) !important;
-  min-width: 330px !important;
-  padding: 0px 12px !important;
-  margin-bottom: 0;
-  font-size: 13px;
-  font-weight: 400;
-  line-height: 1.52857143;
-  text-align: left;
-  vertical-align: middle;
-  cursor: pointer;
-  background-image: none;
-  border-radius: 4px;
-}
-
-:host ::ng-deep .plottype-space .multiselect-dropdown .dropdown-btn {
-  display: inline-block;
-  border: 1px solid #f5f4f4;
-  min-width: 150px !important;
-  padding: 0px 12px !important;
-  margin-bottom: 0;
-  font-size: 13px;
-  font-weight: 400;
-  line-height: 1.52857143;
-  text-align: left;
-  vertical-align: middle;
-  cursor: pointer;
-  background-image: none;
-  border-radius: 2px;
-}
-
-:host ::ng-deep .multiselect-dropdown .dropdown-btn .dropdown-multiselect__caret {
-  line-height: 16px;
-  display: block;
-  position: absolute;
-  box-sizing: border-box;
-  width: 30px;
-  height: 35px !important;
-  right: 1px;
-  margin-top: 0.5rem;
-  margin-left: 20px !important;
-  padding: 4px 8px;
-  text-decoration: none;
-  text-align: center;
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-
-:host ::ng-deep .multiselect-dropdown {
-  position: relative;
-  width: 100% !important;
-  font-size: inherit;
-  font-family: inherit;
-}
-
-:host ::ng-deep .multiselect-dropdown .dropdown-btn {
-  display: inline-block;
-  border: 1px solid #e2e2e2 !important;
-  padding: 6px 12px;
-  margin-bottom: 0;
-  font-weight: 400;
-  line-height: 1.52857143;
-  text-align: left;
-  vertical-align: middle;
-  cursor: pointer;
-  background-image: none;
-  border-radius: 4px;
-}
-
-:host ::ng-deep .multiselect-item-checkbox {
-  padding: 0px 10px !important;
-  cursor: pointer;
-  font-size: 13px;
-  text-align: left;
-}
-
-:host ::ng-deep .multiselect-dropdown .dropdown-btn:last-child {
-  margin-right: 20px !important;
-}
-
-:host ::ng-deep .selected-item-container .selected-item {
-  font-size: 11px !important;
-  margin-top: 0.25rem !important;
-  padding-top: 0.1rem !important;
-}
 // Toggle button version in AU Visualization chart
 input[type="radio"] {
   display: none;
@@ -188,5 +93,69 @@ label {
 
   &:hover {
     border: 1px solid hsla(150, 75%, 50%, 1);
+  }
+}
+.lds-ellipsis {
+  display: inline-block;
+  position: relative;
+  width: 32px;
+  height: 32px;
+  margin-right: 10px;
+}
+
+.lds-ellipsis div {
+  position: absolute;
+  top: 14px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #c2c2c2;
+  animation-timing-function: cubic-bezier(0, 1, 1, 0);
+}
+
+.lds-ellipsis div:nth-child(1) {
+  left: -9px;
+  animation: lds-ellipsis1 0.6s infinite;
+}
+
+.lds-ellipsis div:nth-child(2) {
+  left: -10px;
+  animation: lds-ellipsis2 0.6s infinite;
+}
+
+.lds-ellipsis div:nth-child(3) {
+  left: 2px;
+  animation: lds-ellipsis2 0.6s infinite;
+}
+
+.lds-ellipsis div:nth-child(4) {
+  left: 24px;
+  animation: lds-ellipsis3 0.6s infinite;
+}
+
+@keyframes lds-ellipsis1 {
+  0% {
+    transform: scale(0);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes lds-ellipsis3 {
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(0);
+  }
+}
+
+@keyframes lds-ellipsis2 {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(19px, 0);
   }
 }

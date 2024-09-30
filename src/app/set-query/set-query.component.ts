@@ -1,11 +1,9 @@
 import { Component, Output, AfterViewInit, OnInit, EventEmitter, Input } from '@angular/core';
 import { DataService } from '../config-data-service';
-import { FormBuilder, FormGroup } from '@angular/forms';
-import { ndoDaysOut, plotListLeftOptions, cabinSelections, nDoDropdownSettings, dropdownSettings, dropdownSettingsSingle, departureDateOptions, marketAnalysisOptions } from '../dashboard-constants';
-import { QueryItems } from '../models/dashboard.model';
+import { plotListLeftOptions, cabinSelections, plotListLeftOptionsObject, departureDateOptions, marketAnalysisOptions } from '../dashboard-constants';
+import { QueryItems, RegionList } from '../models/dashboard.model';
 import { arrows } from '../dashboard-constants';
 
-import { cloneDeep } from 'lodash';
 
 @Component({
   selector: 'set-query',
@@ -14,9 +12,6 @@ import { cloneDeep } from 'lodash';
 })
 
 export class SetQueryComponent implements OnInit {
-
-  public dateByRegionOptions: FormGroup;
-  //public dateByRegionSaved: FormGroup;
 
   public selectedPlotType: number = 0;
 
@@ -27,20 +22,27 @@ export class SetQueryComponent implements OnInit {
 
   public plotListLeft = plotListLeftOptions;
 
+  public plotListObject = plotListLeftOptionsObject;
+
+  public plotListObjectSelected;
+
+  public selectedRegions: RegionList[] = [];
+
+  public selectableRegionList: RegionList[] = []
+
   public departureDateOptions = departureDateOptions;
   public metrics = cabinSelections;
-  public nDoDropdownSettings = nDoDropdownSettings;
-  public dropdownSettings = dropdownSettings;
-  public dropdownSettingsSingle = dropdownSettingsSingle
+
 
   public openArrows = arrows;
   public collapsedInputState = false;
 
   public queryObj: QueryItems = {
-    regions: ['ESCANARY'],
+    regions: [],
     plotType: 0,
     ndoList: []
   };
+
 
   @Input()
   set collapseIndfluences(state: boolean) {
@@ -55,37 +57,32 @@ export class SetQueryComponent implements OnInit {
 
   public marketAnalysisOption = marketAnalysisOptions;
 
-  constructor(public fb: FormBuilder, public dataService: DataService) {
+  constructor(public dataService: DataService) {
 
 
     // initialize reactive forms
-    this.dateByRegionOptions = fb.group({
-      region: [],
-      ndoRange: [],
-      plotType: this.plotListLeft[0]
-    });
-
-
-    // this.dateByRegionSaved = fb.group({
+    // this.dateByRegionOptions = fb.group({
     //   region: [],
     //   ndoRange: [],
-    //   plotType: 0
+    //   plotType: this.plotListLeft[0]
     // });
+
 
   }
 
 
   public setScreen(idx: number) {
 
-    console.log('setScreen ', idx, ' dragGrouping ', this.dataService.dashboardFacade.dragGrouping[idx]);
-
+    //console.log('setScreen ', idx, ' dragGrouping ', this.dataService.dashboardFacade.dragGrouping[idx]);
 
     this.plotListLeft = this.dataService.dashboardFacade.dragGrouping[idx].plotTypeOptions;
-    console.log('this.plotListLeft ', this.plotListLeft)
+
+    //console.log('this.plotListLeft ', this.plotListLeft)
     this.dataService.dashboardFacade.selectedScreen = idx;
     this.dataService.dashboardFacade.screenSelectedSubject$.next(idx)
     // this.dataService.dashboardFacade.dragGrouping[idx];
   }
+
 
 
   public collapseQueryItems() {
@@ -97,136 +94,183 @@ export class SetQueryComponent implements OnInit {
 
   ngOnInit(): void {
 
-    // const tempCollection = JSON.parse(window.localStorage.getItem('chartValues'));
+    if (JSON.parse(window.localStorage.getItem('regionList'))) {
 
-    // @ts-ignore
-    if (JSON.parse(window.localStorage.getItem('chartValues'))) {
+      const getStorageValues = JSON.parse(window.localStorage.getItem('regionList'));
 
-      // @ts-ignore
-      const getStorageValues: any[] = JSON.parse(window.localStorage.getItem('chartValues'));
+      this.selectedRegions = getStorageValues;
 
-      this.selectedPlotType = getStorageValues[1];
+      //console.log('getStorageValues  ', getStorageValues)
 
-      this.queryObj = {
-        regions: getStorageValues[0],
-        plotType: getStorageValues[1],
-        ndoList: []
-      }
     } else {
 
-      this.queryObj = {
-        regions: ['ESCANARY'],
-        plotType: 0,
-        ndoList: []
-      }
+      this.selectedRegions = [{ state: true, value: 'ESCANARY' }];
+      localStorage.setItem('regionList', JSON.stringify(this.selectedRegions));
+
     }
-    // console.log('plotListLeft ', this.plotListLeft)
-    // console.log('this.queryObj ', this.queryObj)
 
-    this.dataService.dashboardFacade.sendQueryItems(this.queryObj);
+    //this.plotListObject.forEach(item => item.state = false);
 
+    if (JSON.parse(window.localStorage.getItem('plotType'))) {
 
-    // this.dataService.dashboardFacade.getplotType()
-    //   .subscribe(types => {
-    //     console.log('\n\n types ', types)
-    //   })
+      this.plotListObject = JSON.parse(window.localStorage.getItem('plotType'));
 
-    this.onChanges();
-    this.setFormValues();
-
-    this.dataService.dashboardFacade.getRegionDestinationList()
-      .subscribe((response: any[]) => {
-        // console.log('response ', response)
-        this.regionSpecificDestinations = response;
-        this.ndoRangeOptions = [];
-
-      })
-  }
-
-
-  // Sets initial form state
-  private setFormValues() {
-
-    // console.log('[plotListLeftOptions[this.queryObj.plotType].name] XXXXXXXXXXXXXX ', ' plotType ', this.queryObj.plotType, ' plotListLeftOptions ', this.plotListLeft[this.queryObj.plotType])
-
-    this.dateByRegionOptions.setValue({
-      region: this.queryObj.regions,
-      plotType: [plotListLeftOptions[this.queryObj.plotType]],
-      ndoRange: []
-    });
-
-    //console.log(' XXXXXXXXXXXXXX ', ' plotType ', this.queryObj.plotType, ' plotListLeftOptions ', this.plotListLeft[this.queryObj.plotType])
-
-    // if (this.dateByRegionSaved.value.region === null) {
-    //   this.dateByRegionSaved = cloneDeep(this.dateByRegionOptions);
-    // }
-  }
-
-
-  // onChange for Region only
-  public onChanges() {
-
-    this.dateByRegionOptions.valueChanges.subscribe(val => {
-
-      if (this.dateByRegionOptions.value !== undefined) {
-
-        this.queryObj.regions = val.region;
-        this.queryObj.ndoList = [];
-        //console.log('dateByRegionOptions ', this.queryObj)
+    } else {
+      this.plotListObject[0].state = true;
+      localStorage.setItem('plotType', JSON.stringify(this.plotListObject));
+    }
+    this.plotListObject.forEach((item, i) => {
+      if (item.state) {
+        this.selectedPlotType = i;
       }
-    });
+    })
+
+
+
+    //console.log('ngOnInit ngOnInit ngOnInit ngOnInit ngOnInit ngOnInit ngOnInit\n\n\n\n\n')
+    this.dataService.dashboardFacade.getplotType()
+      .subscribe((response: any) => {
+        // console.log('getplotType  ', response)
+        if (response) {
+          this.plotListObjectSelected = response;
+        }
+      })
+
+
+    this.dataService.dashboardFacade.getGlobalRegionObjects()
+      .subscribe((response: any[]) => {
+
+        if (response.length > 0) {
+
+          let getStorageValues: RegionList[] = [];
+          this.selectableRegionList = response;
+          //console.log('this.selectableRegionList  ', this.selectableRegionList)
+          this.selectableRegionList.forEach((region: RegionList) => {
+            const matchingItem = this.selectedRegions.find(item => item.value === region.value);
+            if (matchingItem) {
+              region.state = matchingItem.state;
+            } else {
+              region.state = false;
+            }
+          });
+        }
+      });
+
+
+
+    // @ts-ignore
+    // const getStorageValues: any[] = JSON.parse(window.localStorage.getItem('chartValues'));
+    // this.selectedPlotType = getStorageValues[1];
+
+    const sendRegionQuery = this.setRegionStringArray(this.selectedRegions);
+    //console.log('sendRegionQuery ', sendRegionQuery)
+
+    this.queryObj = {
+      regions: sendRegionQuery,
+      plotType: 0,
+      ndoList: []
+    }
+
+    //console.log('queryObj ', this.queryObj)
+    // console.log('this.queryObj ', this.queryObj)
+    this.dataService.dashboardFacade.sendQueryItems(this.queryObj);
   }
+
+
+
+  public logAndReturnItem(item: any) {
+    //console.log('logAndReturnItem ', item);
+    return item;
+  }
+
+
+
+
+  private setRegionStringArray(regions: RegionList[]): string[] {
+    const sendRegionQuery = [];
+
+    this.selectedRegions.forEach((region: RegionList) => {
+      sendRegionQuery.push(region.value)
+    })
+    return sendRegionQuery
+  }
+
+
+
 
   // Called from Save button
   public saveSelections() {
-    //console.log('saveSelections this.queryObj ', this.queryObj.plotType)
 
-    this.dateByRegionOptions.setValue({
-      region: this.queryObj.regions,
-      plotType: [plotListLeftOptions[this.queryObj.plotType]],
-      ndoRange: []
-    });
+    console.log('saveSelections this.queryObj ', this.selectedPlotType, ' this.selectedRegions ', this.selectedRegions)
+    const sendRegionQuery = this.setRegionStringArray(this.selectedRegions);
 
-    //this.dateByRegionSaved = cloneDeep(this.dateByRegionOptions);
+    this.queryObj = {
+      regions: sendRegionQuery,
+      plotType: this.selectedPlotType,
+      ndoList: []
+    }
+    console.log('saveSelections sendRegionQuery ', sendRegionQuery)
+
+    this.dataService.dashboardFacade.setGlobalRegionObjects(sendRegionQuery);
+
+    this.dataService.dashboardFacade.setplotTypes(this.selectedPlotType);
 
     setTimeout(() => {
 
-      localStorage.setItem('chartValues', JSON.stringify(Array.from([this.queryObj.regions, this.queryObj.plotType, this.queryObj.ndoList])));
+      localStorage.setItem('chartValues', JSON.stringify(Array.from([this.selectedRegions, this.plotListObjectSelected])));
       this.dataService.dashboardFacade.sendQueryItems(this.queryObj);
     }, 0);
 
   }
 
-  // NON- destructive return form values to saved versions and close
-  // public cancelEditMode() {
-  //   this.dateByRegionOptions.setValue({
-  //     region: this.dateByRegionSaved.value.region,
-  //     plotType: this.dateByRegionSaved.value.plotType,
-  //     ndoRange: []
-  //   });
-  // }
 
 
   // From select drop down
-  public onPlotTypeSelect(ev: any) {
+  public onPlotTypeSelect(item: any) {
 
-    const idx = this.plotListLeft.findIndex(res => res === ev);
-    console.log('onPlotTypeSelect ', ev, ' origin ', origin)
-    this.queryObj.plotType = idx;
-    this.selectedPlotType = idx;
+    console.log('onPlotTypeSelect ', item)
+
+    const index = this.plotListObject.indexOf(item);
+
+    this.plotListObject.forEach(item => item.state = false);
+
+    this.plotListObject[index].state = !this.plotListObject[index].state;
+
+    console.log('onPlotTypeSelect ', this.plotListObject, ' index ', index)
+
+    this.plotListObjectSelected = index;
+
+    this.queryObj.plotType = item
+
+    this.selectedPlotType = index;
+
+    localStorage.setItem('plotType', JSON.stringify(this.plotListObject));
+
   }
 
 
-  public onNdoSelect(ev: any) { }
-
-  public onNdoDeSelect(ev: any) { }
-
-  public onRegionDeSelect(item: any) {
-  }
 
 
   public onRegionSelect(item: any) {
+
+    console.log(' ***********  onRegionSelect ', item)
+
+    //if (this.selectedRegions.length < 4) {
+
+    const index = this.selectableRegionList.indexOf(item);
+
+    this.selectableRegionList[index].state = !this.selectableRegionList[index].state;
+
+    this.selectedRegions = [...this.selectableRegionList.filter((region: RegionList) => region.state === true)];
+
+    console.log('\n\n\n *******index ', index, ' [][] ', this.selectedRegions)
+
+    localStorage.setItem('regionList', JSON.stringify(this.selectedRegions));
+    // }
+
   }
+
+  public onNdoSelect(ev: any) { }
 
   public closeSelected(idx: any) {
     // console.log('closeSelected ', idx)

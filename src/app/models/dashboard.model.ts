@@ -8,10 +8,16 @@ export interface SeasonalItems {
 }
 
 export interface QueryItems {
-  regions: string[];
+  regions: any[];
   plotType: number;
   ndoList?: any[];
 }
+
+export interface RegionList {
+  state: boolean;
+  value: string;
+}
+
 
 export interface ChartDisplayType {
   id: number;

@@ -48,18 +48,26 @@
 
         .second {
             top: 20px !important;
-            margin: 10px;
+            margin: 5px;
             background-color: rgb(247, 247, 247);
 
             .column-hover {
+                display: flex;
+                width: 100%;
                 cursor: pointer;
                 margin-bottom: 5px;
 
                 .widget-frame {
+                    width: 100%;
                     border: 1px solid $brand-primary-background;
                     background-color: #dddddd;
-                    padding: 10px;
-
+                    padding: 5px;
+                    &.el-type {
+                        width: 13%;
+                    }
+                    &.el-metric {
+                        width: 87%;
+                    }
                     &.b-left {
                         background-color: #b6b6b6;
                         border-left: 1px solid rgb(194, 194, 194);

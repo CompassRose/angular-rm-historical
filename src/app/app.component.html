@@ -1,31 +1,28 @@
-<div class="pre-header w-100">
-
-    <div class="container d-flex align-items-center">
-        <div class="accelya-logo-svg"></div>
-
-        <!-- <span class="airRm-text">AirRM </span> -->
-        <section class="title-text me-5">Market Analysis</section>
-
-        <div class="y-centered-row-flex-nowrap ms-auto me-4">
-            <span class="y-centered-row-flex-nowrap me-4">
-                <div class="font-12">NDO</div>
-                <mat-slide-toggle class="mat-slide-toggle"
-                   [ngModel]="isNdoChecked"></mat-slide-toggle>
-                <div class="font-12">Dates</div>
-            </span>
-            <span class="y-centered-row-flex-nowrap me-4">
-                <div class="font-12">Light</div>
-                <mat-slide-toggle class="mat-slide-toggle"
-                   [(ngModel)]="isThemeChange"
-                   (change)="onThemeChange($event)"></mat-slide-toggle>
-                <div class="font-12">Dark</div>
-            </span>
-            <div *ngIf="frameRateCounterState"
-               class="font-13 fw-600">FPS: {{fps$ | async}}</div>
+<div class="all-container">
+    <div class="pre-header w-100">
+        <div class="d-flex align-items-center">
+            <div class="accelya-logo-svg"></div>
+            <section class="title-text me-5">Market Analysis</section>
+            <div class="y-centered-row-flex-nowrap ms-auto me-4">
+                <span class="y-centered-row-flex-nowrap me-4">
+                    <div class="font-12">NDO</div>
+                    <mat-slide-toggle class="mat-slide-toggle"
+                       [ngModel]="isNdoChecked"></mat-slide-toggle>
+                    <div class="font-12">Dates</div>
+                </span>
+                <span class="y-centered-row-flex-nowrap me-4">
+                    <div class="font-12">Light</div>
+                    <mat-slide-toggle class="mat-slide-toggle"
+                       [ngModel]="isThemeChange"
+                       (change)="onThemeChange($event)"></mat-slide-toggle>
+                    <div class="font-12">Dark</div>
+                </span>
+                <!-- <div *ngIf="frameRateCounterState"
+                   class="font-13 fw-600">FPS: {{fps$ | async}}</div> -->
+            </div>
         </div>
     </div>
-</div>
-<div class="container d-flex align-items-center">
+
     <div class="triad-parent">
         <div class="triad-suppot">
             <a [ngClass]="focusedElement === 0 ? 'selection-triad focused' : 'selection-triad not-active'"
@@ -33,50 +30,33 @@
                routerLink="/flightCategories"
                routerLinkActive="active"
                ariaCurrentWhenActive="page">
-                <!-- <div [ngClass]="focusedElement === 0 ? ' focused' : ' not-active'">
-                    <div class="circle-number">1</div>
-                </div> -->
                 <div class="path-link">Flight Selection</div>
             </a>
             <a [ngClass]="focusedElement === 1 ? 'selection-triad focused' : 'selection-triad not-active'"
                (click)="setFocusedElement(1)"
                routerLink="/historical"
                ariaCurrentWhenActive="page">
-                <!-- <div
-                   [ngClass]="focusedElement === 1 ? 'selection-number-circle focused' : 'selection-number-circle not-active'">
-                    <div class="circle-number">2</div>
-                </div> -->
                 <div>Historical Events</div>
             </a>
-            <a [ngClass]="focusedElement === 2 ? 'selection-triad focused' : 'selection-triad not-active'"
-               (click)="setFocusedElement(2)"
-               routerLink="/workbench"
-               ariaCurrentWhenActive="page">
-                <!-- <div
-                   [ngClass]="focusedElement === 3 ? 'selection-number-circle focused' : 'selection-number-circle not-active'">
-
-                    <div class="circle-number">3</div>
-
-                </div> -->
-                <div>Confirmation</div>
-            </a>
-            <a [ngClass]="focusedElement === 3 ? 'selection-triad focused' : 'selection-triad not-active'"
-               (click)="setFocusedElement(3)"
-               routerLink="/analytics"
-               ariaCurrentWhenActive="page">
-                <!-- <div
-                               [ngClass]="focusedElement === 3 ? 'selection-number-circle focused' : 'selection-number-circle not-active'">
-            
-                                <div class="circle-number">3</div>
-            
-                            </div> -->
-                <div>Analytics</div>
-            </a>
-
-
         </div>
     </div>
-</div>
-<div>
-    <router-outlet></router-outlet>
+
+    <div class="flex-column">
+        <router-outlet></router-outlet>
+        <div class="footer w-100">
+            <div class="airrm-logo">
+                <img src="./assets/images/file.png"
+                   alt="Description of the image"
+                   style="width: 30px; margin-bottom: 4px">
+                <img src="./assets/images/airRmText.jpg"
+                   alt="Description of the image"
+                   style="width: 65px;">
+            </div>
+            <span class="d-flex color-test font-12 white-space-no-wrap fw-600  ms-auto me-3">v:
+                {{currentApplicationVersion}}</span>
+            <div class="privacy-text no-underline me-4">
+                Property of Accelya Inc.
+            </div>
+        </div>
+    </div>
 </div>

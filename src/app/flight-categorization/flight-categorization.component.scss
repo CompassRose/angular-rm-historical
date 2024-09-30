@@ -11,4 +11,15 @@
     .scatter-window {
         background-color: black;
     }
+
+    .details-component {
+        z-index: 11000;
+
+        &.border-none {
+            border-left: 0px solid transparent;
+        }
+        &.border-left {
+            border-left: 3px solid white;
+        }
+    }
 }
